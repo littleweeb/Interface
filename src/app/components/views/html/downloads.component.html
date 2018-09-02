@@ -1,0 +1,98 @@
+<div class="ui basic segment min-height-100 ">  
+    
+    <div class="ui basic episodes min-height-100 min-width-100 tofront transparant-grey-bg display-grid" *ngIf="showModal" style="top:0; right:0; position: absolute; ">
+        <div style="margin: calc(100% - calc(100% - 20%)); ">
+            <div class="ui icon header white-text center">
+                Files for anime: {{modalAnimeTitle}}
+            </div>
+            <div class="content center-text" >
+                <table class="ui very unstackable basic inverted table min-width-100 " >
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Size</th>
+                            <th>Options</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listWithDownloads">
+                        <tr *ngFor="let file of modalFiles">
+                            <td id="filename_{{file.id}}">{{file.filename}}</td>
+                            <td id="filename_{{file.id}}">{{file.filesize}} Mb</td>
+                            <td id="buttons_{{file.id}}">
+                                <p>
+                                    <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendPlayRequest(file)" class="ui blue basic inverted button"><i class="play icon"></i></button>                            
+                                    <button *ngIf="!isLocal" class="min-width-100 margin-bottom-5" (click)="getUrl(file)" class="ui blue basic inverted button"><i class="folder open outline icon"></i></button>
+                                    <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendOpenLocationRequest(file)"  class="ui blue basic inverted button"><i class="folder open outline icon"></i></button>
+                                </p>
+                                <p>
+                                    <button class="btn-listwithdownloads" (click)="sendDeleteRequest(file)"  class="ui red basic inverted button"><i class="trash alternate outline icon"></i></button>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions" >
+                <button class="ui green basic inverted button" (click)="goToAnimeInfo(modalFiles[0].animeInfo)">
+                    Open Anime Info
+                </button>
+                <button class="ui red basic inverted button" (click)="closeModal(modalId)">
+                    <i class="remove icon"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row " >
+        <div class="ui horizontal divider"> DOWNLOAD QUE </div>
+        <table style="border-spacing: 0;" cellspacing="0" class="ui very basic unstackable table bg-white min-width-100" >
+            <thead>
+                <tr>
+                <th class="width-20">File</th>
+                <th class="width-20">Size</th>
+                <th class="width-20">Status</th>
+                <th class="width-20">Progress</th>
+                <th class="width-20">Speed</th>
+                <th class="width-20">Options</th>
+                </tr>
+            </thead>
+            <tbody id="listWithDownloads">
+                <tr *ngFor="let download of downloads">
+                    <td id="filename_{{download.id}}">{{download.filename}}</td>
+                    <td id="status_{{download.id}}">{{download.filesize}} Mb</td>
+                    <td id="status_{{download.id}}">{{download.status}}</td>
+                    <td>
+                        <div style="text-align: center;"> {{download.progress}}% </div><br/>
+                        <progress class="min-width-100 min-height-15" [value]="download.progress" max="100">{{download.progress}}%</progress>
+                    </td>
+                    <td>                        
+                        <div style="text-align: center;"> {{download.speed}} kB/s </div>
+                    </td>
+                    <td id="buttons_{{download.id}}">
+                        <p>
+                                <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendPlayRequest(download)" class="ui primary button"><i class="play icon"></i></button>                            
+                                <button *ngIf="!isLocal" class="min-width-100 margin-bottom-5" (click)="getUrl(download)" class="ui primary button"><i class="folder open outline icon"></i></button>
+                                <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendOpenLocationRequest(download)"  class="ui primary button"><i class="folder open outline icon"></i></button>
+                                <button class="min-width-100 margin-bottom-5" (click)="sendAbortRequest(download)"  class="ui primary button"><i class="window close outline icon"></i></button>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div> 
+    <div class="row" >
+        <div class="ui horizontal divider"> ALREADY DOWNLOADED </div>
+        <div class="ui link cards " >                           
+            <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of alreadyDownloaded;" (click)="showFilesFor(anime.animeInfo.animeid)"    >
+                <span class="tooltiptext">{{anime.animeInfo.title}}</span>
+                <div class="image" >
+                    <img [src]="anime.animeInfo.cover_small" class="cover-size-ssml" /> 
+                </div>
+                <div class="content card-content-height-lrg">
+                    <div class="card-content-text">{{anime.animeInfo.title}}</div>
+                </div>
+            </div>        
+        </div>            
+    </div>
+</div>
+

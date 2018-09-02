@@ -1,0 +1,196 @@
+<div class="ui basic segment ">
+    <div class="ui horizontal divider"> LittleWeeb BACK-END CONNECTION STATUS</div>
+    
+    <h5>LittleWeeb Back-end Connection Status: </h5> {{connectionStatusBackEnd}}
+
+    <div class="ui horizontal divider"> IRC CLIENT CONNECTION STATUS </div>
+      
+    <h5>IRC Connection Status: </h5> {{connectionStatus}}
+
+    <div class="ui horizontal divider"> SETTINGS </div>
+    <div class="ui form">
+        
+        <div class="ui divider"> </div>
+        <div class="field margin-top-1">
+            <label>LittleWeeb Back-end Connection Settings.</label>
+            <input  class="text-input-setting" id="backEndConnectionAddress" type="text" name="backEndConnectionAddress"   [(ngModel)]="backEndConnectionAddress" [value]="backEndConnectionAddress"> 
+        
+        </div>
+        <div class="field margin-top-1">
+            <label>Actions:</label>
+            <button class="ui primary button" (click)="setCustomBackEndConnection()">Save & Connect</button>
+            <button class="ui primary button" (click)="reconnectToBackend()">Reconnnect</button>
+            <button class="ui primary button" (click)="disconnectFromBackend()">Disconnect</button>
+            <button class="ui primary button" (click)="setDefaultBackEndConnection()">Default</button>
+        </div>
+    
+
+        <div class="ui divider"> </div>
+        <div class="field margin-top-1">
+            <label>Download Location</label>
+            <input  class="text-input-setting" id="downloadLocation" type="text" name="downloadLocation" placeholder="{{downloadlocation}}"> 
+        </div>
+
+        <div class="field margin-top-1">
+            <label>Actions:</label>
+            <button class="ui primary button" (click)="openFileDialog()">Change</button>
+        </div>
+
+        <div class="ui divider"> </div>
+        
+        <div class="field margin-top-1">
+            <label>Set Default Resolution, Current: {{currentDefaultResolution}}</label>
+            <div class="field margin-top-1">
+                <div class="ui selection dropdown fixed-width-150" >
+                    <input type="hidden" name="resolutionAnime"  class="fixed-width-150">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">{{currentDefaultResolution}}</div>
+                    <div class="menu min-width-7" >                
+                        <div class="item " (click)="setResolution('all')">All Resolutions</div>
+                        <div class="item" (click)="setResolution('480')" >480p</div>
+                        <div class="item" (click)="setResolution('720')" >720p</div>
+                        <div class="item" (click)="setResolution('1080')" >1080p</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui divider"> </div>
+        <div class="field margin-top-1">
+            <label>Set minimum space required in MegaBytes for "Not Enough Space Left" warning to show.</label>
+            <input  class="text-input-setting" id="minSpaceRequired" type="text" name="minSpaceRequired"   [(ngModel)]="minspacerequired" [value]="minspacerequired"> 
+        </div>
+
+        <div class="field margin-top-1">
+            <label>Actions:</label>
+            <button class="ui primary button" (click)="setMinimumRequiredSpace()">Save</button>
+        </div>
+
+        <div class="ui divider"> </div>
+        <div class="field margin-top-1">
+            <label>Custom IRC Server - Where the IRC client is connected to</label>
+            <input  class="text-input-setting" id="customServer" type="text" name="customServer"   [(ngModel)]="address" [value]="address"> 
+        </div>
+        <div class="field margin-top-1">
+            <label>Custom Channel(s) - Seperate with ','.</label>
+            <input class="text-input-setting" id="customChannels" type="text" name="customChannels"  [(ngModel)]="channels" [value]="channels"> 
+        </div>
+        <div class="field margin-top-1">
+            <label>Custom Username - Username to use to connect to a IRC server.</label>
+            <input class="text-input-setting" id="customUsername" type="text" name="customUsername"  [(ngModel)]="username" [value]="username" > 
+        </div>
+            
+        <div class="field margin-top-1">
+            <label>Actions:</label>
+            <button class="ui primary button" (click)="setCustomConnection()">Save & Connect</button>
+            <button class="ui primary button" (click)="connectToIrcServer()">Connnect</button>
+            <button class="ui primary button" (click)=" disconnectIrcServer()">Disconnect</button>
+            <button class="ui primary button" (click)=" setDefaultConnection()">Default</button>
+        </div>
+        <div class="ui divider"> </div>
+        <div class="field margin-top-1">
+            <label>Set debug message type:</label>
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="entryDebugLevel" (change)="entryDebugLevel = !entryDebugLevel">
+                <label>Entry Messages (When a specific method/constructor/event/task is called)</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="parameterDebugLevel" (change)="parameterDebugLevel = !parameterDebugLevel">
+                <label>Parameter Messages (Which parameters were used for the called method/constructor/event/task.)</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="infoDebugLevel" (change)="infoDebugLevel = !infoDebugLevel">
+                <label>Info Messages (Information generated by calling certain code for debug purposes.)</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="warningDebugLevel" (change)="warningDebugLevel = !warningDebugLevel">
+                <label>Warning Messages (Information about warnings during execution of method/constructor/event/task)</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="errorDebugLevel" (change)="errorDebugLevel = !errorDebugLevel">
+                <label>Error Messages (Information about errors during execution of method/constructor/event/task)</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="severeDebugLevel" (change)="severeDebugLevel = !severeDebugLevel">
+                <label>Severe (error) Messages (Information about a non recoverable error during execution of method/constructor/event/task)</label>
+            </div>
+            <div class="field margin-top-1">
+                <label>Actions:</label>
+                <button class="ui primary button" (click)="setDebugLevel()">Save</button>
+            </div>
+        </div>
+        <div class="ui divider"> </div>
+        <div class="field margin-top-1">
+            <label>Set debug sourcs:</label>
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="constructorsDebugMessage" (change)="constructorsDebugMessage = !constructorsDebugMessage">
+                <label>Messages from Constructor.</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="methodsDebugMessage" (change)="methodsDebugMessage = !methodsDebugMessage">
+                <label>Messages from Methods</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="eventsDebugMessage" (change)="eventsDebugMessage = !eventsDebugMessage">
+                <label>Messages from Events</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="tasksDebugMessage" (change)="tasksDebugMessage = !tasksDebugMessage">
+                <label>Messages from Tasks</label>
+            </div>
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="externalDebugMessage" (change)="externalDebugMessage = !externalDebugMessage">
+                <label>Messages from external Libraries (such as SimpleWebsocketServer & SimpleIRCLibrary)</label>
+            </div>            
+            <br />
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="undefinedDebugMessage" (change)="undefinedDebugMessage = !undefinedDebugMessage">
+                <label>Messages from unknown/undefined sources. </label>
+            </div>
+            <div class="field margin-top-1">
+                <label>Actions:</label>
+                <button class="ui primary button" (click)="setDebugType()">Save</button>
+            </div>
+        </div>
+        <div class="ui divider"> </div>  
+        <div class="field">
+            <label>Enable/Disable Console Log</label>
+            <div class="ui checkbox">
+                <input type="checkbox" [checked]="enableConsoleLog" (change)="enableConsoleLog = !enableConsoleLog" (click)="enableDisableConsole()">
+                <label>Enable/Disable Console Log </label>
+            </div>
+        </div>
+        <div class="ui divider"> </div>  
+        <div class="field">
+            <label>WebSocketLog</label>
+            <textarea #scrollMe [scrollTop]="scrollMe.scrollHeight"> {{webSocketLog}}</textarea>
+        </div>
+        <div class="ui divider"> </div>  
+        <div class="field margin-top-1">
+            <label>LocalStorage:</label>
+            <div class="ui selection dropdown" >
+                <input type="hidden" name="localstorageSelector" class="fixed-width-150">
+                <i class="dropdown icon"></i>
+                <div class="default text">Select LocalStorage Type:</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" *ngFor="let key of localStorageKeys"  (click)="showKey(key)"  >{{key}}</div>
+                </div>
+            </div>
+            <button class="ui primary button" (click)="resetStorage()">Reset Selected</button>
+        </div>
+        <div class="field">
+            <label>Local Storage Value:</label>
+            <textarea>{{localStorageData}}</textarea>
+        </div>
+      
+    </div>
+</div>

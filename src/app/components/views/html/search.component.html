@@ -1,0 +1,151 @@
+<div class="ui basic segment ">
+    <div class="row computer only min-width-100" >
+        <div class="ui horizontal divider">SEARCH</div>
+        <div class="field margin-top-1">
+            <div class="ui icon input min-width-100" >
+                <input #searchInput1 (keyup.enter)="search(searchInput1.value)" class="prompt" type="text" placeholder="Search Anime">
+                <i class="search icon"></i>
+            </div>
+        </div>
+        <div class="field margin-top-1">                          
+            <div class="ui labels" >
+                <div class="ui label" *ngFor="let categorie of selectedcategories" (click)="removeCategory(categorie)">
+                    {{categorie.title}}
+                    <i class="delete icon"></i>
+                </div>
+            </div>                          
+            <div class="ui labels" >
+                <div class="ui label" *ngFor="let genre of selectedgenres" (click)="removeGenre(genre)">
+                    {{genre.name}}
+                    <i class="delete icon"></i>
+                </div>
+            </div>                        
+            <div class="ui labels" >
+                <div class="ui label" *ngFor="let year of selectedyears" (click)="removeYear(year)">
+                    {{year}}
+                    <i class="delete icon"></i>
+                </div>
+            </div>                          
+            <div class="ui labels" >
+                <div class="ui label" *ngFor="let season of selectedseasons" (click)="removeSeason(season)">
+                    {{season}}
+                    <i class="delete icon"></i>
+                </div>
+            </div>
+            <div class="ui labels" >
+                <div class="ui label" *ngFor="let type of selectedtypes" (click)="removeType(type)">
+                    {{type}}
+                    <i class="delete icon"></i>
+                </div>
+            </div>
+            <div class="ui labels" >
+                <div class="ui label" *ngFor="let status of selectedstatusus" (click)="removeStatus(status)">
+                    {{status}}
+                    <i class="delete icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="field margin-top-1">                             
+            <div  class="ui selection dropdown" >
+                <input type="hidden" name="category">
+                <i class="dropdown icon"></i>
+                <div class="default text">Categories</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" *ngFor="let category of categories"  (click)="addCategory(category)"  >{{category.title}}</div>
+                </div>
+            </div>
+            <div  class="ui selection dropdown" >
+                <input type="hidden" name="genres">
+                <i class="dropdown icon"></i>
+                <div class="default text">Genres</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" *ngFor="let genre of genres"  (click)="addGenre(genre)"  >{{genre.name}}</div>
+                </div>
+            </div>
+            <div  class="ui selection dropdown" >
+                <input type="hidden" name="year" >
+                <i class="dropdown icon"></i>
+                <div class="default text">Year</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" *ngFor="let year of years"  (click)="addYear(year)"  >{{year}}</div>
+                </div>
+            </div>
+            <div  class="ui selection dropdown " >
+                <input type="hidden" name="season">
+                <i class="dropdown icon"></i>
+                <div class="default text">Season</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" *ngFor="let season of seasons"  (click)="addSeason(season)"  >{{season}}</div>
+                </div>
+            </div>
+            <div  class="ui selection dropdown " >
+                <input type="hidden" name="type">
+                <i class="dropdown icon"></i>
+                <div class="default text">Type</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" *ngFor="let type of types"  (click)="addType(type)"  >{{type}}</div>
+                </div>
+            </div>
+            <div  class="ui selection dropdown " >
+                    <input type="hidden" name="status">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Status</div>
+                    <div class="menu botlist min-width-7"  >  
+                            <div class="item" *ngFor="let status of statusus"  (click)="addStatus(status)"  >{{status}}</div>
+                    </div>
+                </div>
+            <div  class="ui selection dropdown " >
+                <input type="hidden" name="type">
+                <i class="dropdown icon"></i>
+                <div class="default text">Include R - rated</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item"  (click)="includeRRated('Yes')"  >Yes (＾་།＾)</div>
+                    
+                    <div class="item"  (click)="includeRRated('No')"  >No ε-(´・｀) ﾌ</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="field margin-top-1">
+            <button class="ui primary button min-width-100" (click)="search(searchInput1.value)">Search</button>
+        </div>
+
+    </div>
+    <div *ngIf="showResults" class=" row computer only">        
+       <div class="ui basic segment ">
+            <div class="ui horizontal divider"> Search results for {{searchquery}} </div>
+            <div class="ui divider"> </div>
+            <div class="ui link cards " >
+                                
+                <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of results" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.titles.en_jp)"   >
+                    <span class="tooltiptext">{{fulltitle}}</span>
+                    <div class="image" >
+                        <img src="{{anime.attributes.posterImage.small}}" class="cover-size-ssml" /> 
+                    </div>
+                    <div class="content card-content-height-lrg">
+                        <div class="card-content-text">{{anime.attributes.titles.en_jp}}</div>
+                    </div>       
+                </div>        
+            </div>
+        </div>
+        
+
+    <div *ngIf="showPagination" class=" row computer only">  
+        <div class="ui labels">
+            <a class="ui big label" (click)="prevPage()">
+                <i class="icon angle left"></i> 
+            </a>
+            <div class="ui icon input" >
+                <input #pageInput (keyup.enter)="specificPage(pageInput.value)" class="prompt" type="text" [(ngModel)]="currentPage">
+            </div>
+            <a class="ui big label" (click)="nextPage()">
+                <i class="icon angle right" ></i> 
+            </a>
+        </div>      
+       
+    </div>
+    <div *ngIf="showError" class="row computer only">        
+        <h3> Sorry, we couldn't find what you searched for :(. </h3>
+    </div>  
+</div>

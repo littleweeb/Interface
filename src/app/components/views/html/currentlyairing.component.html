@@ -1,0 +1,18 @@
+<div class="ui basic segment ">
+    <div *ngIf="showCurAir">
+        <div class="ui horizontal divider"> Currently Airing </div>
+        <div class="ui divider"> </div>
+        <div class="ui link cards " >
+                           
+            <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of latestAired" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.titles.en_jp)"   >
+                <span class="tooltiptext">{{fulltitle}}</span>
+                <div class="image" >
+                    <img src="{{anime.attributes.posterImage.small}}" class="cover-size-ssml" /> 
+                </div>
+                <div class="content card-content-height-lrg">
+                    <div class="card-content-text">{{anime.attributes.titles.en_jp}}</div>
+                </div>
+            </div>        
+        </div>
+    </div>
+</div>

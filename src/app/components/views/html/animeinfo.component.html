@@ -1,0 +1,389 @@
+<div class="ui basic segment min-width-100" *ngIf="doneLoading">  
+    <div class="row deskContent min-width-100"  *ngIf="this.animeInfo.relations !== undefined">
+        <div class="ui link cards custom-size-info-card-left min-width-100">
+            <div class="card custom-size-info-card-left">
+                <div class="image">
+                <img [src]="this.animeInfo.animeInfo.posterImage.large">
+                </div>
+                <div class="content">
+                <div class="header">{{this.animeInfo.animeInfo.canonicalTitle}}</div>
+                <div class="meta">
+                    <a>Genres</a>
+                </div>
+                <div class="description">                      
+                    <div *ngFor="let genre of this.animeInfo.relations.genres">
+                        <span *ngIf="genre !== undefined">
+                        {{genre.attributes.name}},
+                        </span>
+                    </div>
+                    <hr>
+                    <p>
+                        <button class="ui inverted blue button" (click)="addToFavorites(this.animeInfo)"> Add To Favorites </button>
+                    </p>
+                </div>
+                </div>
+                <div class="extra content">
+                    <span class="right floated">
+                    <i class="users icon"></i>
+                        {{this.animeInfo.animeInfo.favoritesCount}} Members 
+                    </span>
+                    <span>
+                        <i class="star icon"></i>
+                        Score {{this.animeInfo.animeInfo.averageRating}} 
+                    </span>
+                </div>
+            </div>
+
+            <div class="card custom-size-info-card-right">
+                <div class="image ">
+                    <iframe  class="youtube-size " [src]="'https://www.youtube.com/embed/'+ this.animeInfo.animeInfo.youtubeVideoId  | safe" frameborder="0">
+                    </iframe>
+                </div>
+                <div class="content " >
+                    <div class="header">Synopsis</div>
+                    <div class="meta">
+                        <span class="date"></span>
+                    </div>
+                    <div class="content ">
+                        <div class="description" [innerHtml]="this.animeInfo.animeInfo.synopsis">
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <span class="right">
+                            <i class="file video outline icon"></i>
+                            Status: {{this.animeInfo.animeInfo.status}}
+                        </span>
+                        <span>
+                            <i class="television icon"></i>
+                            Type: {{this.animeInfo.animeInfo.subtype}}
+                        </span>                        
+                    </div>
+                </div>
+            </div>
+        </div>            
+        <div class="divider ui"></div> 
+    </div>   
+    <div class="row phoneContent"  *ngIf="this.animeInfo.relations !== undefined">
+
+        <div class="ui secondary pointing three item menu phoneContent">                
+            <a class="ui item" (click)="showInfo = false; showEpisodes = true; showTrailer = false;">
+                <i class="play icon ">  </i> Episodes
+            </a> 
+            <a class="ui item" (click)="showInfo = true; showEpisodes = false; showTrailer = false;" >
+                <i class="info icon ">  </i> Anime Info
+            </a>   
+            <a class="ui item" (click)="showInfo = false; showEpisodes = false; showTrailer = true;" >
+                <i class="film icon ">  </i> Trailer
+            </a>                            
+        </div>
+        <div class="ui link cards min-width-100" *ngIf="showEpisodes">
+            <div class="card custom-card-size-left">
+                <div class="image">
+                    <img  [src]="this.animeInfo.animeInfo.posterImage.large">
+                </div>
+                    <div class="content">
+                        <div class="header">{{this.animeInfo.animeInfo.canonicalTitle}}</div>
+                    <div class="description">                    
+                        <button class="ui inverted blue button" (click)="addToFavorites(this.animeInfo)"> Add To Favorites </button>
+                    </div>               
+                </div>
+            </div>
+
+            <div class="card custom-card-size-right">              
+                <div class="content " >
+                    <div class="header">Synopsis</div>
+                
+                    <div class="content ">
+                        <div class="description" [innerHtml]="this.animeInfo.animeInfo.synopsis">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>     
+        <div class="ui link cards min-width-100" *ngIf="showInfo">
+            <div class="card custom-card-size-orientation">
+                <div class="image">
+                <img [src]="this.animeInfo.animeInfo.posterImage.large">
+                </div>
+                <div class="content">
+                <div class="header">{{this.animeInfo.animeInfo.canonicalTitle}}</div>
+                <div class="description">                    
+                        <button class="ui inverted blue button" (click)="addToFavorites(this.animeInfo)"> Add To Favorites </button>
+                </div>
+                </div>
+                <div class="extra content">
+                    <span class="right floated">
+                    <i class="users icon"></i>
+                        {{this.animeInfo.animeInfo.favoritesCount}} Members 
+                    </span>
+                    <span>
+                        <i class="star icon"></i>
+                        Score {{this.animeInfo.animeInfo.averageRating}} 
+                    </span>
+                </div>
+            </div>
+
+            <div class="card custom-card-size-orientation">
+                <div class="content " >
+                    <div class="header">Synopsis & Genres</div>
+                    <div class="meta">
+                        <span class="date"></span>
+                    </div>
+                    <div class="content ">
+                    
+                        <b>Genres:</b>
+                        <span *ngIf="this.animeInfo.relations.genres !== undefined && this.animeInfo.relations.genres != ''">
+                            <div *ngFor="let genre of this.animeInfo.relations.genres">
+                                <span *ngIf="genre !== undefined && genre != ''">
+                                {{genre.attributes.name}},
+                                </span>
+                            </div>
+                        </span>
+                        <hr>
+                        <div class="description" [innerHtml]="this.animeInfo.animeInfo.synopsis">
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <span class="right">
+                            <i class="file video outline icon"></i>
+                            Status: {{this.animeInfo.animeInfo.status}}
+                        </span>
+                        <span>
+                            <i class="television icon"></i>
+                            Type: {{this.animeInfo.animeInfo.subtype}}
+                        </span>                        
+                    </div>
+                </div>
+            </div>
+        </div>    
+        <div class="ui link cards height-100" *ngIf="showTrailer">
+
+            <div class="card width-100 height-100">
+                <iframe  class="youtube-size " [src]="'https://www.youtube.com/embed/'+ this.animeInfo.animeInfo.youtubeVideoId  | safe" frameborder="0">
+                </iframe>
+            </div>
+        </div>                
+    <div class="divider ui"></div> 
+    </div>    
+    
+    <div class="ui grid" *ngIf="showList && showEpisodes ">
+        <div class="sixteen wide column">
+            <div *ngIf="enableAdvanced" class="ui selection dropdown fixed-width-150" >
+                <input type="hidden" name="botanime" class="fixed-width-150">
+                <i class="dropdown icon"></i>
+                <div class="default text">All Bots</div>
+                <div class="menu botlist min-width-7"  >  
+                    <div class="item" (click)="showBot('all')" >All Bots</div>
+                    <div class="item" *ngFor="let bot of botList"  (click)="showBot(bot)"  >{{bot}}</div>
+                </div>
+            </div>
+            <div class="ui selection dropdown fixed-width-150" >
+                <input type="hidden" name="resolutionAnime"  class="fixed-width-150">
+                <i class="dropdown icon"></i>
+                <div class="default text">{{dropdownres}}</div>
+                <div class="menu min-width-7" >                
+                    <div class="item " (click)="showResolution('all')">All Resolutions</div>
+                    <div class="item" (click)="showResolution('480')" >480p</div>
+                    <div class="item" (click)="showResolution('720')" >720p</div>
+                    <div class="item" (click)="showResolution('1080')" >1080p</div>
+                </div>
+            </div> 
+            
+            <button *ngIf="enableAdvanced" class="ui inverted blue button" (click)="showAll()"> Show all </button>
+            <button *ngIf="enableAdvanced" class="ui inverted blue button" (click)="closeAll()"> Close all</button>
+            
+            <button class="ui inverted blue button" (click)="batchAll()"> Download Full Anime (Experimental!)</button>
+            <div class="ui toggle checkbox">
+                <input type="checkbox" name="public" [checked]="enableAdvanced" (change)="enableOrDisableAdvanced()">
+                <label>Advanced Mode</label>
+            </div>
+            
+            <div class="divider ui"></div> 
+        </div> 
+    </div>
+    <div class="row center-text"  *ngIf="showError">
+        <h3> :( Something happend and I couldn't find files for your anime!</h3> 
+        
+        <div class="divider ui"></div> 
+
+        <h4> Go to the <a href="/settings"> Settings </a> page to select search strictness, where lower means that it's more likely to find files which might not be related to the anime in question. But in case that the files have different names than the original anime title then you could use that.</h4>
+    </div>
+    <div *ngIf="showAlreadyDownloaded" class="ui grid">
+        <div class="sixteen wide column">
+            <div class="ui styled accordion min-width-100" >
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    Already Downloaded
+                </div>  
+                <div class="content"> 
+                    <table class="ui very unstackable basic table min-width-100 bg-white" >
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Size</th>
+                                <th>Options</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listWithDownloads">
+                            <tr *ngFor="let file of alreadyDownloadedFiles">
+                                <td id="filename_{{file.id}}">{{file.filename}}</td>
+                                <td id="filename_{{file.id}}">{{file.filesize}} Mb</td>
+                                <td id="buttons_{{file.id}}">
+                                    <p>
+                                        <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendPlayRequest(file)" class="ui primary button"><i class="play icon"></i></button>                            
+                                        <button *ngIf="!isLocal" class="min-width-100 margin-bottom-5" (click)="getUrl(file)" class="ui primary button"><i class="folder open outline icon"></i></button>
+                                        <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendOpenLocationRequest(file)"  class="ui primary button"><i class="folder open outline icon"></i></button>
+                                    </p>
+                                    <p>
+                                        <button class="btn-listwithdownloads" (click)="sendDeleteRequest(file)"  class="ui primary button"><i class="trash alternate outline icon"></i></button>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>  
+        </div>
+    </div>              
+
+    <div *ngIf="showDownload" class="ui grid">
+        <div class="sixteen wide column">
+            <table style="border-spacing: 0;" cellspacing="0" class="ui very basic unstackable table bg-white min-width-100">
+                <thead>
+                    <tr>
+                    <th class="width-20">File</th>
+                    <th class="width-20">Size</th>
+                    <th class="width-20">Status</th>
+                    <th class="width-20">Progress</th>
+                    <th class="width-20">Speed</th>
+                    <th class="width-20">Options</th>
+                    </tr>
+                </thead>
+                <tbody id="listWithDownloads">
+                    <tr *ngFor="let download of downloads">
+                        <td id="filename_{{download.id}}">{{download.filename}}</td>
+                        <td id="status_{{download.id}}">{{download.filesize}} Mb</td>
+                        <td id="status_{{download.id}}">{{download.status}}</td>
+                        <td>
+                            <div style="text-align: center;"> {{download.progress}}% </div><br/>
+                            <progress class="min-width-100 min-height-15" [value]="download.progress" max="100">{{download.progress}}%</progress>
+                        </td>
+                        <td>                        
+                            <div style="text-align: center;"> {{download.speed}} kB/s </div>
+                        </td>
+                        <td id="buttons_{{download.id}}">
+                            <p>
+                                <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendPlayRequest(download)" class="ui primary button"><i class="play icon"></i></button>                            
+                                <button *ngIf="!isLocal" class="min-width-100 margin-bottom-5" (click)="getUrl(download)" class="ui primary button"><i class="folder open outline icon"></i></button>
+                                <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendOpenLocationRequest(download)"  class="ui primary button"><i class="folder open outline icon"></i></button>
+                                <button class="min-width-100 margin-bottom-5" (click)="sendAbortRequest(download)"  class="ui primary button"><i class="window close outline icon"></i></button>
+                            </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="divider ui"></div> 
+        </div>
+    </div>  
+    
+    <div class="ui grid" *ngIf="showList && showEpisodes"> 
+        <div class="sixteen wide column">                   
+            <div class="ui styled accordion episodeList min-width-100 " id="packs">
+                <div *ngFor="let episodes of episodeList; let i=index; "  >
+                    <div *ngIf="episodes != 'not defined'">
+
+                        <div class="title" id="{{episodes[0].episodeNumber}}" *ngIf="episodes != 'not defined'" >
+                            <i  *ngIf="enableAdvanced" class="dropdown icon"></i>
+                            <button class="ui green inverted button" *ngIf="!enableAdvanced" (click)="selectBestEpisode(episodes[0].episodeNumber)" ><i class="cloud download icon"></i></button>
+                            <button class="ui green inverted button" *ngIf="!enableAdvanced" (click)="playEpisode(episodes[0].episodeNumber)" ><i class="play icon"></i></button>
+                            <label>Episode {{episodes[0].episodeNumber}} - {{episodes[0].episodeTitle}}</label>
+                        </div>               
+                        <div class="content" *ngIf="episodes[0] != 'not defined' && enableAdvanced" >
+                            
+                            <table class="ui very basic unstackable table bg-white min-width-100">
+                                <thead>
+                                    <tr>
+                                    <th class="width-20">Download</th>
+                                    <th class="width-20">Bot</th>
+                                    <th class="width-20">Filename</th>
+                                    <th class="width-20">FileSize</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listWithFiles">
+                                    <tr *ngFor="let episode of episodes[0].files; let b=index">
+                                        <ng-container *ngIf="episode.botId != false"> 
+                                            <ng-container *ngIf="checkIfStringContiains(episode.name, resolution) || showAllResolutions">
+                                                <ng-container *ngIf="checkIfStringContiains(episode.botId, botname) || showAllBots"> 
+                                                    <td> 
+                                                        <button class="ui green inverted button" (click)="appendToDownloadsDirectly(episode)"><i class="cloud download icon"></i></button>
+                                                        <button class="ui green inverted button" (click)="playEpisodeAdvanced(episode, episodes[0].episodeNumber)"><i class="play icon"></i></button>
+                                                    </td>
+                                                    <td>{{episode.botId}}</td>
+                                                    <td>{{episode.name}}</td>
+                                                    <td>{{episode.size}}</td>   
+                                                                
+                                                </ng-container>
+                                            </ng-container>
+                                        </ng-container>
+                                    </tr>                 
+                                </tbody>
+                            </table>
+                            
+                        </div>
+                    </div>            
+                </div>     
+            </div>
+            <hr>
+            <div *ngIf="movieList.length > 1">
+                <div class="ui styled accordion episodeList min-width-100 " id="movies">                 
+                    <div *ngFor="let movies of movieList; let i=index; "  >
+                        <div *ngIf="movies != 'not defined'">
+    
+                            <div class="title" id="{{movies[0].episodeNumber}}" *ngIf="movies != 'not defined'" >
+                                <i  *ngIf="enableAdvanced" class="dropdown icon"></i>
+                                <button class="ui green inverted button" *ngIf="!enableAdvanced" (click)="selectBestEpisode(movies[0].episodeNumber)" ><i class="cloud download icon"></i></button>
+                                <button class="ui green inverted button" *ngIf="!enableAdvanced" (click)="playEpisode(movies[0].episodeNumber)" ><i class="play icon"></i></button>
+                                <label>Episode {{i}}</label>
+                            </div>               
+                            <div class="content" *ngIf="movies != 'not defined' && enableAdvanced" >
+                                
+                                <table class="ui very basic unstackable table bg-white min-width-100">
+                                    <thead>
+                                        <tr>
+                                        <th class="width-20">Download</th>
+                                        <th class="width-20">Bot</th>
+                                        <th class="width-20">Filename</th>
+                                        <th class="width-20">FileSize</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="listWithFiles">
+                                        <tr *ngFor="let movie of movies; let b=index">
+                                            <ng-container *ngIf="movie.botId != false"> 
+                                                <ng-container *ngIf="checkIfStringContiains(movie.name, resolution) || showAllResolutions">
+                                                    <ng-container *ngIf="checkIfStringContiains(movie.botId, botname) || showAllBots"> 
+                                                        <td> 
+                                                            <button class="ui green inverted button" (click)="appendToDownloadsDirectly(movie)"><i class="cloud download icon"></i></button>
+                                                            <button class="ui green inverted button" (click)="playEpisodeAdvanced(movie, movie.episodeNumber)"><i class="play icon"></i></button>
+                                                        </td>
+                                                        <td>{{movie.botId}}</td>
+                                                        <td>{{movie.name}}</td>
+                                                        <td>{{movie.size}}</td>   
+                                                                    
+                                                    </ng-container>
+                                                </ng-container>
+                                            </ng-container>
+                                        </tr>                 
+                                    </tbody>
+                                </table>
+                                
+                            </div>
+                        </div>      
+                    </div>     
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+  
+   
+    

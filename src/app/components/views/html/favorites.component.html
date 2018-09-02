@@ -1,0 +1,23 @@
+
+
+<div class="ui basic segment ">
+    <div *ngIf="showFavorites">
+        <div class="ui horizontal divider"> Favorites </div>
+        <div class="ui divider"> </div>
+        <div class="ui link cards " >
+                           
+            <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of favoriteAnimes" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.titles.en_jp)"   >
+                <span class="tooltiptext">{{fulltitle}}</span>
+                <div class="image" >
+                    <img src="{{anime.attributes.posterImage.small}}" class="cover-size-ssml" /> 
+                </div>
+                <div class="content card-content-height-lrg">
+                    <div class="card-content-text">{{anime.attributes.titles.en_jp}}</div>
+                </div>
+                 <div class="extra content">
+                    <button class="ui blue button inverted min-width-100" (click)="removeFromFavorites(anime.id)">Remove</button>
+                </div>
+            </div>        
+        </div>
+    </div>
+</div>

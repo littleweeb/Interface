@@ -1,0 +1,55 @@
+<div class="ui modal filedialog" >
+    <div class="ui icon header">
+        <i class="folder open outline icon" ></i>
+        Currently viewing directory: {{currentlyDirectoryPathViewing}}
+    </div>
+    <div class="scrolling content custom-content-filedialog" >
+        <p> <b>Current path: {{currentDirectoryPathSelected}} </b></p>
+        
+        <div *ngIf="showCreate">
+            <div class="ui icon input min-width-100%">
+                <input #searchInput class="prompt" type="text" placeholder="Type your directory name here!" />
+                <button (click)="createDir(searchInput.value); this.showCreate = false;" class="ui green button" >                                     
+                    Create
+                </button>
+                    <button (click)="this.showCreate = false;" class="ui red button" >                                     
+                    Cancel
+                </button>
+            </div>
+        </div>
+        <div class="ui divider"></div>
+        <button (click)="this.showCreate = true;" class="ui  button min-width-100" >                                     
+            Create Directory
+        </button>                        
+        <div class="ui divider"></div>
+        <button (click)="goBackDir()" class="ui  button min-width-100" >                                     
+            Go back.
+        </button>
+        <table style="border-spacing: 0;" cellspacing="0" class="ui very basic table min-width-100" >
+            <thead>
+                <tr>
+                <th class="min-width-100">Directory</th>
+                </tr>
+            </thead>
+            <tbody id="listWithDownloads">
+                <tr *ngFor="let directory of directoryList">
+                    <td>
+                        <button (click)="openDir(directory.path); this.currentlyDirectoryPathViewing = directory.dirname;" class="ui  button min-width-100" >                                       
+                            {{directory.dirname}}
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="actions">
+        <div class="ui red cancel button">
+        <i class="remove icon"></i>
+            Cancel
+        </div>
+        <button (click)="selectDir()" class="ui green ok button">
+        <i class="checkmark icon"></i>
+            Set as directory.
+        </button>
+    </div>
+</div>
