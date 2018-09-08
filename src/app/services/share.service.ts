@@ -22,6 +22,7 @@ export class ShareService {
     public modalMessage : Subject<string[]> = new BehaviorSubject<string[]>(null);
     public showFileDialogEvent : Subject<Boolean> = new BehaviorSubject<Boolean>(null);
     public searchQuery : Subject<string> = new BehaviorSubject<string>(null);
+
     public isLocal : boolean;
     public baseDownloadDirectory :string;
 

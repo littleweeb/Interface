@@ -14,7 +14,8 @@ import {BackEndService} from './services/backend.service'
  * @class AppComponent
  */
 @Component({
-  selector: 'my-app',
+  selector: 'my-app',  
+  styleUrls: ['./components/extras/css/toaster.component.css'],
   template: `
            
         
@@ -42,6 +43,13 @@ import {BackEndService} from './services/backend.service'
                             <i class="{{menuItem.icon}} icon "></i> {{menuItem.title}}
                         </a>
                     </div> 
+                    <div class="ui horizontal divider"> </div>
+                    
+                    <div (click)="showReleaseUpdate()" class="custom-notification" *ngIf="newRelease.update_available"> <i class="bell icon"></i>A new Release version is available! (Click here for more info.)</div>
+                    <div (click)="showDevelopUpdate()" class="custom-notification" *ngIf="newDevelop.update_available"> <i class="bell icon"></i>A new Develop version is available! (Click here for more info.)</div>
+                    
+                    <div class="ui white-text center-text margin-top-2 menu-quote"> Current Version: {{version}}</div>
+                    <div class="ui white-text center-text margin-top-2 menu-quote"> Current Build: {{build}}</div>
                 
                 </div>
 
@@ -60,13 +68,14 @@ import {BackEndService} from './services/backend.service'
                 <div class="pusher overflow-y-scrollable pusher-extra max-height-size-depended" (click)="closeMenu()">
                     <router-outlet class="overflow-y-scrollable height-100"></router-outlet>
                     
-                    <toaster></toaster>
                     <loader></loader>
                     <modal></modal>
                     <filedialog></filedialog>
                         
                 </div>
             </div>
+            
+            <toaster style="position: fixed;"></toaster>
     
  
   `
@@ -78,6 +87,9 @@ export class AppComponent  {
     someFunctionToCall : Function;
     showMenu : boolean;
     version : string;
+    build : string;
+    newDevelop : any = { update_available : false };
+    newRelease : any= { update_available : false };
     /**
      * Creates an instance of AppComponent.
      * @param {ShareService} shareService (for sending and receiving information to and from other Components & Services)
@@ -183,6 +195,19 @@ export class AppComponent  {
                     }
                 }
 
+                if(message.type == "version_update"){
+                    this.build = message.currentbuild;
+                    this.version = message.currentversion;
+                    if(message.newversion != "Not Found"){
+                        if(message.release_version == "master"){
+                            this.newRelease = message;
+                        } else if(message.release_version == "develop"){
+                            console.log(message);
+                            this.newDevelop = message;
+                        }
+                    }
+                }
+
             }
         })
             
@@ -272,7 +297,42 @@ export class AppComponent  {
         });
     }
 
-  
+    
+    showReleaseUpdate(){
+        this.shareService.showModal("There is a new version available!", "Your current version is v" + this.newRelease.currentversion +
+            ", build: " + this.newRelease.currentbuild + " , but version " + this.newRelease.newversion + ", build: " + this.newRelease.newbuild + " has arrived!", 
+            "feed", 
+            `<div class="ui red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Not interested.
+            </div>
+            <a href="` + this.newRelease.direct_download_url +`" class="ui green ok inverted button">
+            <i class="checkmark icon"></i>
+            Download
+            </a>
+            <a  target="_blank" href="` + this.newRelease.release_url +`" class="ui green ok inverted button">
+            <i class="checkmark icon"></i>
+            Go to github.
+            </a>`);
+    }
+
+    showDevelopUpdate(){
+        this.shareService.showModal("There is a new version available!", "Your current version is v" + this.newDevelop.currentversion +
+        ", build: " + this.newDevelop.currentbuild + " , but version " + this.newDevelop.newversion + ", build: " + this.newDevelop.newbuild + " has arrived!", 
+        "feed", 
+        `<div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Not interested.
+        </div>
+        <a href="` + this.newDevelop.direct_download_url +`" class="ui green ok inverted button">
+        <i class="checkmark icon"></i>
+        Download
+        </a>
+        <a target="_blank" href="` + this.newDevelop.release_url +`" class="ui green ok inverted button">
+        <i class="checkmark icon"></i>
+        Go to github.
+        </a>`);
+    }
 
     /**
      * In case of mobile, side menu is opened and closed through a button
