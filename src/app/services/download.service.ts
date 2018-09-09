@@ -69,6 +69,15 @@ export class DownloadService {
                     this.shareService.updateAmountOfDownloads(this.downloadQue.length);
                 }
 
+                if(message.status.indexOf("ALREADY EXISTS") != -1){
+                    let obj = this.downloadQue.find(x => x.id == message.id);               
+                    let index = this.downloadQue.indexOf(obj);
+                    this.downloadQue.splice(index, 1);
+                    this.updateDownloadList.next(this.downloadQue); 
+                    this.getAlreadyDownloaded();  
+                    this.shareService.updateAmountOfDownloads(this.downloadQue.length);
+                }
+
                 
 
             }
@@ -88,6 +97,8 @@ export class DownloadService {
      * @memberof DownloadService
      */
     addDownload(download: any){
+        
+        this.backendService.sendMessage({action : "get_free_space"});  
         this.downloadQue.push(download);
 
         let customDirPerAnime = this.shareService.getDataLocal("CustomDirectoryPerAnime");
@@ -110,6 +121,21 @@ export class DownloadService {
 
         this.shareService.updateAmountOfDownloads(this.downloadQue.length);
        
+    }
+
+    addDownloadBatch(downloads: any){
+        this.backendService.sendMessage({action : "get_free_space"});
+        let counter = 0;
+        for(let download of downloads){
+
+            this.downloadQue.push(download);
+            downloads[counter].filesize = download.filesize.substr(0,  downloads[counter].filesize.length - 1);
+            counter++;
+        }
+        this.consoleWrite(downloads);
+        this.backendService.sendMessage({"action": "add_downloads", "extra" : {"batch" : downloads}});
+
+        this.shareService.updateAmountOfDownloads(this.downloadQue.length);
     }
 
     /**

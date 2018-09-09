@@ -27,7 +27,7 @@ import {BackEndService} from './services/backend.service'
                         </a> 
                         
                         <a class="ui item" routerLink="currentlyairing" routerLinkActive="active" >
-                         <h4>LittleWeeb v0.4.0 </h4>
+                         <h4>LittleWeeb {{version}}</h4>
                         </a>
                          <a class="ui item" routerLink="about" routerLinkActive="active">
                            <i class="info icon ">  </i> About
@@ -37,7 +37,7 @@ import {BackEndService} from './services/backend.service'
 
                 <div class="ui visible inverted left vertical custom-fixed sidebar menu deskContent ">
                     <div class="ui white-text center-text margin-top-2 menu-quote"> It Takes an Idiot to do something Cool </div>
-                    <div class="ui horizontal divider white-text"> LittleWeeb- v{{version}} </div>
+                    <div class="ui horizontal divider white-text"> LittleWeeb - {{version}} </div>
                     <div *ngFor="let menuItem of menuItems">
                         <a class="item" routerLink="{{menuItem.view}}" routerLinkActive="active">
                             <i class="{{menuItem.icon}} icon "></i> {{menuItem.title}}
@@ -45,36 +45,44 @@ import {BackEndService} from './services/backend.service'
                     </div> 
                     <div class="ui horizontal divider"> </div>
                     
-                    <div (click)="showReleaseUpdate()" class="custom-notification" *ngIf="newRelease.update_available"> <i class="bell icon"></i>A new Release version is available! (Click here for more info.)</div>
-                    <div (click)="showDevelopUpdate()" class="custom-notification" *ngIf="newDevelop.update_available"> <i class="bell icon"></i>A new Develop version is available! (Click here for more info.)</div>
-                    
-                    <div class="ui white-text center-text margin-top-2 menu-quote"> Current Version: {{version}}</div>
-                    <div class="ui white-text center-text margin-top-2 menu-quote"> Current Build: {{build}}</div>
+                    <div style="bottom: 10px; !important;">
+                        <div (click)="showReleaseUpdate()" class="custom-notification" *ngIf="newRelease.update_available"> <i class="bell icon"></i>A new Release version is available! (Click here for more info.)</div>
+                        <div (click)="showDevelopUpdate()" class="custom-notification" *ngIf="newDevelop.update_available"> <i class="bell icon"></i>A new Develop version is available! (Click here for more info.)</div>
+                            
+                        <div class="ui white-text center-text menu-quote"> Current Version: {{version}}</div>
+                        <div class="ui white-text center-text menu-quote"> Current Build: {{build}}</div>    
+                    </div>  
                 
                 </div>
 
                 <div *ngIf="showMenu" class="ui visible inverted left vertical sidebar menu phoneContent">
                 
                     <div class="ui white-text center-text margin-top-2 menu-quote"> It Takes an Idiot to do something Cool </div>
-                    <div class="ui horizontal divider white-text"> LittleWeeb - v{{version}}  </div>
+                    <div class="ui horizontal divider white-text"> LittleWeeb - {{version}}  </div>
                     <div *ngFor="let menuItem of menuItems">
                         <a class="item" routerLink="{{menuItem.view}}" routerLinkActive="active" (click)="openCloseMenu()">
                             <i class="{{menuItem.icon}} icon "></i> {{menuItem.title}}
                         </a>
-                    </div>                 
+                    </div>      
+
+                    <div style="bottom: 10px; !important">
+                        <div (click)="showReleaseUpdate()" class="custom-notification" *ngIf="newRelease.update_available"> <i class="bell icon"></i>A new Release version is available! (Click here for more info.)</div>
+                        <div (click)="showDevelopUpdate()" class="custom-notification" *ngIf="newDevelop.update_available"> <i class="bell icon"></i>A new Develop version is available! (Click here for more info.)</div>
+                            
+                        <div class="ui white-text center-text menu-quote"> Current Version: {{version}}</div>
+                        <div class="ui white-text center-text menu-quote"> Current Build: {{build}}</div>    
+                    </div>   
                 </div>
 
                 
                 <div class="pusher overflow-y-scrollable pusher-extra max-height-size-depended" (click)="closeMenu()">
                     <router-outlet class="overflow-y-scrollable height-100"></router-outlet>
-                    
-                    <loader></loader>
-                    <modal></modal>
-                    <filedialog></filedialog>
-                        
                 </div>
             </div>
             
+            <loader></loader>
+            <modal></modal>
+            <filedialog></filedialog>
             <toaster style="position: fixed;"></toaster>
     
  
@@ -164,7 +172,9 @@ export class AppComponent  {
         } 
 
         this.backEndService.tryConnecting();
-        this.versionService.getVersion();
+
+        
+
      
         this.shareService.getFavoritAnimeCount();
 
@@ -179,12 +189,12 @@ export class AppComponent  {
                     } else {
                         minfreespace = Number(minfreespacestr);
                     }
-                    if(message.freespacembytes < minfreespace){
+                    if(message.freespacembytes <= minfreespace){
                         this.shareService.showModal("Running out of Storage Space :(.", `It seems that your device is running out of space. 
                         LittleWeeb can't download when there is not enough space to store an episode. 
                         To resolve this issue, please remove something (be it a downloaded episode or another file). 
                         You currently have ` + message.freespacembytes + ` MB left, but you need atleast ` +  minfreespacestr +
-                        `MB for LittleWeeb to be functional.`,
+                        `MB for LittleWeeb to be functional. You can change the minimum required space within the Settings.`,
                          "folder open", 
                         `<div class="ui red basic cancel inverted button">
                             Ignore.

@@ -33,7 +33,7 @@ export class Settings {
     downloadlocation : string;
 
     //status
-    connectionStatus : string = "Disconnected.";
+    connectionStatusIRC : string = "Disconnected.";
     connectionStatusBackEnd : string = "Disconnected";
     littleWeebSettings : any;
     ircSettings : any;
@@ -115,6 +115,11 @@ export class Settings {
     ngOnInit(){        
         let baseDownloadDirBe = this.shareService.getDataLocal("baseDownloadDir");
 
+        if(this.backEndService.websocketConnected){
+
+            this.connectionStatusBackEnd = "Connected.";
+        }
+
         
         this.backEndService.websocketMessages.subscribe((message) => {
             if(message !== null){
@@ -131,9 +136,9 @@ export class Settings {
                     this.downloadlocation = message.fullfilepath;
 
                     if(message.connected){
-                        this.connectionStatus = "Connected.";
+                        this.connectionStatusIRC = "Connected.";
                     } else {
-                        this.connectionStatus = "Disconnected.";
+                        this.connectionStatusIRC = "Disconnected.";
                     }
 
                     this.ircSettings = message;

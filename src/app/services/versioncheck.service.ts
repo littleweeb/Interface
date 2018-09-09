@@ -24,13 +24,10 @@ export class VersionService {
      * @memberof VersionService
      */
     constructor(private http: Http, private shareService:ShareService, private backendService:BackEndService){
-        this.currentVersion = "0.4.0"; //current version
     }
 
     async getVersion(){
         
-        this.backendService.sendMessage({action : "check_version"});
-
       
     }
 }

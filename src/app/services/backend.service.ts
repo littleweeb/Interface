@@ -65,6 +65,7 @@ export class BackEndService {
                             this.shareService.hideLoader();
 
                             this.connected = true;
+                                                    
                         } 
                         else
                         {
@@ -84,7 +85,10 @@ export class BackEndService {
                 } 
                 else if(messageRec.type == "welcome")
                 {
-                    this.sendMessage({"action":"get_irc_data"});
+                    this.sendMessage({action : "get_irc_data"});
+                    this.sendMessage({action : "get_free_space"});  
+                    setTimeout(()=>               
+                    this.sendMessage({action : "check_version"}), 500);
                 } 
                 else if(messageRec.errortype != null)
                 {
@@ -123,6 +127,7 @@ export class BackEndService {
                     this.shareService.showLoaderMessage("Waiting for connection to IRC!");
                     this.webSocketConnected = true;
                     console.log(evt);
+                    
                     this.websocketMessages.next({"type" : "websocketstatus", "status":"Connected."});
                     this.interval = setInterval(()=>{
                         if(this.messageQue.length >= 1){

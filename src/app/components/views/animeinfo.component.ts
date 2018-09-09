@@ -389,12 +389,20 @@ export class AnimeInfo{
             let id = '|' + anime.id + '|';
 
             if(relation.indexOf(id) > -1){
+                this.consoleWrite("Found relation: " + relation + " using id: " + id);
+
+
+                if(relation.indexOf("~ - ") != -1){
+                    relation = relation.split("~ - ")[1];
+                }
+
                 
                 let partWithEpisodeIndex = relation.split("- ")[1];
-
+                this.consoleWrite("Splitted using the id:");
+                this.consoleWrite(partWithEpisodeIndex.split(id));
                 let leftOrRight = "undefined";
-
-                if(partWithEpisodeIndex.split(id)[1].indexOf("->") > -1){
+                
+                if(partWithEpisodeIndex.split(id)[1].indexOf("->") != -1){
                     leftOrRight = "left";
                 } else {
                     leftOrRight = "right";
@@ -1085,10 +1093,34 @@ export class AnimeInfo{
     */
    batchAll(){       
         var i = 0;
-        for(let episodes of this.episodeList){
-            this.selectBestEpisode(i);
-            i++;
+        let batchDownloads = [];
+        for(i=0; i < this.episodeList.length;i++){
+            if(this.episodeList[i] != "not defined"){
+                let files = this.episodeList[i][0].files;
+                this.consoleWrite(files);
+                for(let file of files){
+                    if(this.prefferedbots.indexOf[file.botId] && file.name.indexOf(this.resolution) != -1){
+                        this.consoleWrite("Found best file:");
+                        this.consoleWrite(file);
+                        var genid = this.utilityService.generateId(file.botId, file.number);
+                        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: file.episodeNumber, pack : file.number, bot: file.botId, filename: file.name, filesize: file.size, status : "Waiting", progress : "0", speed : "0", dir : this.animeDir};
+                        batchDownloads.push(newDownload);
+                        break;
+                    } else if(file.name.indexOf(this.resolution)  != -1){
+                        this.consoleWrite("Found best file:");
+                        this.consoleWrite(file);                
+                        //this.appendToDownloadsDirectly(file);
+
+                        var genid = this.utilityService.generateId(file.botId, file.number);
+                        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: file.episodeNumber, pack : file.number, bot: file.botId, filename: file.name, filesize: file.size, status : "Waiting", progress : "0", speed : "0", dir : this.animeDir};
+                        batchDownloads.push(newDownload);
+                        break;
+                    }
+                }
+            }
         } 
+
+        this.downloadService.addDownloadBatch(batchDownloads);
     }
 
     /**
@@ -1099,21 +1131,27 @@ export class AnimeInfo{
      */
     selectBestEpisode(i:number){
         this.semanticui.closeAccordion(i);
-        let files = this.episodeList[i][0].files;
-        this.consoleWrite(files);
-        for(let file of files){
-            if(this.prefferedbots.indexOf[file.botId] && file.name.indexOf(this.resolution) != -1){
-                this.consoleWrite("Found best file:");
-                this.consoleWrite(file);
-                this.appendToDownloadsDirectly(file);
-                break;
-            } else if(file.name.indexOf(this.resolution)  != -1){
-                this.consoleWrite("Found best file:");
-                this.consoleWrite(file);                
-                this.appendToDownloadsDirectly(file);
-                break;
+        this.consoleWrite(i);
+        this.consoleWrite(this.episodeList);
+
+        if(this.episodeList[i] != "not defined"){
+            let files = this.episodeList[i][0].files;
+            this.consoleWrite(files);
+            for(let file of files){
+                if(this.prefferedbots.indexOf[file.botId] && file.name.indexOf(this.resolution) != -1){
+                    this.consoleWrite("Found best file:");
+                    this.consoleWrite(file);
+                    this.appendToDownloadsDirectly(file);
+                    break;
+                } else if(file.name.indexOf(this.resolution)  != -1){
+                    this.consoleWrite("Found best file:");
+                    this.consoleWrite(file);                
+                    this.appendToDownloadsDirectly(file);
+                    break;
+                }
             }
         }
+       
 
     }
 
