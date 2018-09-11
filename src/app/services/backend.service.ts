@@ -30,7 +30,7 @@ export class BackEndService {
     private messageQue: string[];
     private enableDebugging : boolean = true;
     private webSocketConnected : boolean = false;
-
+    private canSend : boolean = true;
     /**
      * Creates an instance of BackEndService.
      * Requests base download dir and gets default irc settings from localstorage (if there is something stored there)
@@ -86,10 +86,12 @@ export class BackEndService {
                 else if(messageRec.type == "welcome")
                 {
                     this.sendMessage({action : "get_irc_data"});
-                    this.sendMessage({action : "get_free_space"});  
-                    setTimeout(()=>               
-                    this.sendMessage({action : "check_version"}), 500);
+                    this.sendMessage({action : "get_free_space"});   
+                    this.sendMessage({action : "check_version"});
                 } 
+                else if(messageRec.type =="received"){
+                   this.canSend = true;
+                }
                 else if(messageRec.errortype != null)
                 {
                    // this.shareService.showMessage('error', messageRec.errormessage);
@@ -131,8 +133,11 @@ export class BackEndService {
                     this.websocketMessages.next({"type" : "websocketstatus", "status":"Connected."});
                     this.interval = setInterval(()=>{
                         if(this.messageQue.length >= 1){
-                            this.websocket.send(this.messageQue[0]);
-                            this.messageQue.splice(0, 1);
+                            if(this.canSend){
+                                this.canSend = false;
+                                this.websocket.send(this.messageQue[0]);
+                                this.messageQue.splice(0, 1);
+                            }
                         }
                     }, 100);
                 };
@@ -177,7 +182,6 @@ export class BackEndService {
      * @memberof BackEndService
      */
     sendMessage(message: any) {
-
         this.messageQue.push(JSON.stringify(message));
         this.consoleWrite("pusshed the following message:");
         this.consoleWrite(JSON.stringify(message));
