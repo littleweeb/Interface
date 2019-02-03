@@ -4,7 +4,7 @@
         <div class="ui divider"> </div>
         <div class="ui link cards " >
                            
-            <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of latestAired" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.titles.en_jp)"   >
+            <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of latestAired.airing_ordered" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.canonicalTitle)"   >
                 <span class="tooltiptext">{{fulltitle}}</span>
                 <div class="image" >
                     <img src="{{anime.attributes.posterImage.small}}" class="cover-size-ssml" /> 

@@ -89,7 +89,7 @@ export class BackEndService {
                     this.sendMessage({action : "get_free_space"});   
                     this.sendMessage({action : "check_version"});
                 } 
-                else if(messageRec.type =="received"){
+                else if(messageRec.type =="received_websocket_message"){
                    this.canSend = true;
                 }
                 else if(messageRec.errortype != null)
@@ -108,13 +108,13 @@ export class BackEndService {
     */
    async tryConnecting(){
        
-       this.shareService.showLoaderMessage("Waiting for connection to back-end!");
+       this.shareService.showMessage('success', "Waiting for backend.");
 
 
        let tryconnectinterval = setInterval(()=>{
             if(!this.webSocketConnected){
                 
-                console.log("Not conntected, trying to connect");
+                this.shareService.showMessage('error', "Not connected, retrying.");
                 let connectionAddress = this.shareService.getDataLocal('backEndConnectionAddress');
                 if(!connectionAddress){
                     this.shareService.storeDataLocal('backEndConnectionAddress', "ws://127.0.0.1:1515");
@@ -139,7 +139,7 @@ export class BackEndService {
                                 this.messageQue.splice(0, 1);
                             }
                         }
-                    }, 100);
+                    }, 10);
                 };
                 this.websocket.onmessage = (evt : any) => {
                     try{     
@@ -167,10 +167,11 @@ export class BackEndService {
            } else {
                this.shareService.hideLoader();     
                
+               this.shareService.showMessage('success', "Connected to backend!");
                console.log("Websocket client connected!");          
                clearInterval(tryconnectinterval);
            }        
-       }, 2000);
+       }, 5000);
       
     }
 
@@ -191,6 +192,101 @@ export class BackEndService {
         if(this.websocket !== undefined){
             this.websocket.close();
         }
+    }
+
+    searchAnime(search : string, categories: any, genres :any, years :any, seasons :any,statusus: any, types: any, rRated: boolean, page: number = 0, amount:number = 20){  
+      
+        console.log("start search: " + search);
+        let queryObject = {"search":search, query:[], page : page, pages : amount};
+
+        let filterArray = new Array();
+        
+        if(categories.length > 0){
+            let categoriesstring = "";
+            for(let category of categories){
+                categoriesstring = category.title + ",";
+            }
+            categoriesstring = categoriesstring.substr(0, categoriesstring.length - 1);
+            let queryObj = {"categories" : categoriesstring}; 
+            filterArray.push(queryObj);
+        }
+        
+
+        let genresquery = "";
+        if(genres.length > 0){
+            let genresstring = "";
+            for(let genre of genres){
+                genresstring = genre.name + ",";
+            }
+            genresstring = genresstring.substr(0, genresstring.length - 1);
+            let queryObj = {"genres" : genresstring}; 
+            filterArray.push(queryObj);
+
+        }
+
+        let yearsquery = "";
+        if(years.length > 0){
+            let yearsstring = "";
+            for(let year of years){
+                yearsstring = year + ".." + year + ",";
+            }
+            yearsstring = yearsstring.substr(0, yearsstring.length - 1);
+            let queryObj = {"year" : yearsstring}; 
+            filterArray.push(queryObj);
+        }
+
+        let statususquery = "";
+        if(statusus.length > 0){
+            let statususstring = "";
+            for(let status of statusus){
+                statususstring = status + ",";
+            }
+            statususstring = statususstring.substr(0, statususstring.length - 1);
+            let queryObj = {"status" : statususstring}; 
+            filterArray.push(queryObj);
+        }
+
+        let typesquery = "";
+        if(types.length > 0){
+            let typesstring = "";
+            for(let type of types){
+                typesstring = type + ",";
+            }
+            typesstring  = typesstring .substr(0, typesstring .length - 1);            
+            let queryObj = {"subtype" : typesstring}; 
+            filterArray.push(queryObj);
+        }
+
+        queryObject.query = filterArray;
+        
+        console.log("query: " + search);
+        console.log(queryObject);
+        this.sendMessage({"action":"search_kitsu", "extra":queryObject});       
+       
+    }
+
+    getAnimeInfo(id : any){                
+        this.sendMessage({"action":"get_anime_profile", "extra":{"id":id}});     
+    }  
+
+    getAllCurrentlyAiring(botId : number = 21, likeness : number = 0.5, niblnotfound : boolean = false){        
+        this.sendMessage({"action":"get_currently_airing",  "extra" : {"likeness" : likeness, "botid": botId, "nonniblfoundanime":niblnotfound}});     
+    } 
+
+    getAllGenres(){
+        this.sendMessage({"action":"get_genres_kitsu"});
+    }
+
+    getAllCategories(){      
+        this.sendMessage({"action":"get_categories_kitsu"});
+    }  
+
+    getBotList(){
+        this.sendMessage({"action":"get_botlist_nibl"});        
+    }
+
+    getAnimeInfoWithEpisodes(id : string, page: number = 0, pages: number = 1){
+        this.sendMessage({"action":"get_anime_episodes", "extra":{"id":id, "page":page, "pages":pages }});        
     }
 
     /**

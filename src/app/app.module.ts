@@ -85,7 +85,7 @@ const appRoutes: Routes = [
   imports:      [  BrowserModule,  RouterModule.forRoot(appRoutes, { enableTracing: true, useHash: true }), FormsModule, HttpModule, CommonModule, BrowserAnimationsModule, NoopAnimationsModule],
   declarations: [ AppComponent, CurrentlyAiring, Search, Favorites, Downloads, Settings, About, AnimeInfo,  Loader, Modal, FileDialog, Toaster, SafePipe, KeysPipe ],
   bootstrap:    [ AppComponent ],
-  providers: [NiblService, UtilityService, ShareService, BackEndService, SemanticService, VersionService, DownloadService, KitsuService]
+  providers: [NiblService, UtilityService, ShareService, SemanticService, VersionService, DownloadService, KitsuService, BackEndService]
 })
 export class AppModule { }
 

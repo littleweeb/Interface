@@ -1,6 +1,5 @@
 import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Router} from '@angular/router';
-import {KitsuService} from '../../services/kitsu.service'
 import {ShareService} from '../../services/share.service'
 import {BackEndService} from '../../services/backend.service'
 import {Subject} from 'rxjs/Rx';
@@ -41,12 +40,29 @@ export class CurrentlyAiring {
      * @param {Router} router 
      * @memberof CurrentlyAiring
      */
-    constructor( private kitsuService: KitsuService, private shareService: ShareService, private router: Router){
+    constructor( private shareService: ShareService, private backEndService: BackEndService,  private router: Router){
         this.currentlyAiringLoading = false;
         this.animeTitle = "Anime";
         this.showCurAir = true;
         this.showAnime = false;
         this.daysArray = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+
+
+        this.backEndService.websocketMessages.subscribe((message) => {
+            if(message !== null){
+                if(message.type == "anime_info_currently_airing"){
+                    console.log(message);
+                    this.latestAired = message.result;
+                    this.shareService.hideLoader();
+                    
+                    var seconds = new Date().getTime() / 1000;
+                    this.shareService.storeDataLocal("currently_airing",JSON.stringify( {currentTime: seconds, airing: message.result }));
+                    this.shareService.showMessage("succes", "Currently Airing Updated!");     
+                }
+            }
+        });
+
     }
 
     /**
@@ -59,8 +75,8 @@ export class CurrentlyAiring {
         this.shareService.showLoaderMessage("Loading currently airing!");
 
         var data;
-        var retreiveAiring = this.shareService.getDataLocal("Airing");
-        if(retreiveAiring  != false){                         
+        var retreiveAiring = this.shareService.getDataLocal("currently_airing");
+        if(retreiveAiring != false){                         
               
             var airing = JSON.parse(retreiveAiring);
             var seconds = new Date().getTime() / 1000;
@@ -68,30 +84,18 @@ export class CurrentlyAiring {
             this.latestAired = airing.airing; 
             this.showCurAir = true;
             this.shareService.hideLoader();
-            if(seconds - airing.currentTime > 300){
+            if(seconds - airing.currentTime > 100){
                 
                 this.shareService.showMessage("succes", "Updating currently airing."); 
            
-                this.kitsuService.getAllCurrentlyAiring().subscribe((result)=>{
-                    seconds = new Date().getTime() / 1000;
-
-                    this.consoleWrite("AIRING ANIME RESULT:");
-                    this.consoleWrite(result);
-                    this.shareService.storeDataLocal("Airing",JSON.stringify( {currentTime: seconds, airing: result }));
-                    this.latestAired = result;  
-                    this.shareService.showMessage("succes", "Currently Airing Updated!");          
-                });
+                this.backEndService.getAllCurrentlyAiring();
             }
             
         } else {
-            this.kitsuService.getAllCurrentlyAiring().subscribe((result)=>{
-                var seconds = new Date().getTime() / 1000;
-                this.shareService.storeDataLocal("Airing",JSON.stringify( {currentTime: seconds, airing: result }));
-                this.latestAired = result;                
-                this.showCurAir = true;
-                this.shareService.hideLoader();
-            });
+
+            this.backEndService.getAllCurrentlyAiring();
         }    
+
     }
     
     /**

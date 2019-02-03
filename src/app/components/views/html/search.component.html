@@ -52,7 +52,7 @@
                 <i class="dropdown icon"></i>
                 <div class="default text">Categories</div>
                 <div class="menu botlist min-width-7"  >  
-                    <div class="item" *ngFor="let category of categories"  (click)="addCategory(category)"  >{{category.title}}</div>
+                    <div class="item" *ngFor="let category of categories"  (click)="addCategory(category.attributes)"  >{{category.attributes.title}}</div>
                 </div>
             </div>
             <div  class="ui selection dropdown" >
@@ -60,7 +60,7 @@
                 <i class="dropdown icon"></i>
                 <div class="default text">Genres</div>
                 <div class="menu botlist min-width-7"  >  
-                    <div class="item" *ngFor="let genre of genres"  (click)="addGenre(genre)"  >{{genre.name}}</div>
+                    <div class="item" *ngFor="let genre of genres"  (click)="addGenre(genre.attributes)"  >{{genre.attributes.name}}</div>
                 </div>
             </div>
             <div  class="ui selection dropdown" >
@@ -118,13 +118,13 @@
             <div class="ui divider"> </div>
             <div class="ui link cards " >
                                 
-                <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of results" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.titles.en_jp)"   >
+                <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of results" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.canonicalTitle)"   >
                     <span class="tooltiptext">{{fulltitle}}</span>
                     <div class="image" >
                         <img src="{{anime.attributes.posterImage.small}}" class="cover-size-ssml" /> 
                     </div>
                     <div class="content card-content-height-lrg">
-                        <div class="card-content-text">{{anime.attributes.titles.en_jp}}</div>
+                        <div class="card-content-text">{{anime.attributes.canonicalTitle}}</div>
                     </div>       
                 </div>        
             </div>

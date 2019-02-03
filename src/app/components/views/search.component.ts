@@ -3,7 +3,7 @@ import {Router} from '@angular/router';
 import {NiblService} from '../../services/nibl.service'
 import {ShareService} from '../../services/share.service'
 import {UtilityService} from '../../services/utility.service'
-import {KitsuService} from '../../services/kitsu.service'
+import {BackEndService} from '../../services/backend.service'
 import {SemanticService} from '../../services/semanticui.service'
 import {Subject} from 'rxjs/Rx';
 import 'rxjs/add/observable/of'; //proper way to import the 'of' operator
@@ -49,7 +49,7 @@ export class Search {
     showYears : boolean = false;
     showSeasons: boolean = false;
     showShowTypes : boolean = false;
-    showPagination : boolean = false;
+    showPagination : boolean = true;
 
     currentPage : number = 0;
 
@@ -58,16 +58,35 @@ export class Search {
     /**
     * Creates an instance of Search.
     * @param {ShareService} shareService (used for sharing and receiving information from other components & services )
-    * @param {KitsuService} kitsuService (used for communicating with kitsu's API)
+    * @param {backEndService} backEndService (used for communicating with kitsu's API)
     * @param {Router} router (used for redirecting if needed)
     * @memberof Search
     */
-    constructor(private semanticService : SemanticService, private shareService : ShareService, private kitsuService : KitsuService, private router:Router){
+    constructor(private backEndService: BackEndService, private semanticService : SemanticService, private shareService : ShareService, private router:Router){
         this.seasons = ["winter", "spring", "summer", "autumn"];
         this.types = ["TV", "movie", "special", "OVA", "ONA", "music"];
         this.statusus = ["current", "finished", "tba", "unreleashed", "upcoming"];
         this.searchquery = "nothing searched";
+
+        this.backEndService.websocketMessages.subscribe((message) => {
+            if(message !== null){
+                console.log(message);
+                switch(message.type){
+                    case "kitsu_search_result":
+                        this.OnSearchResult(message.result);
+                        break;
+                    case "kitsu_genres":
+                        this.OnGenres(message.result);
+                        break;
+                    case "kitsu_categories":
+                        this.OnCategories(message.result);
+                        break;
+                }
+            } 
+        });
     }
+
+   
 
    /**
     * Runs everytime and checks if the search query has already been executed before, and shows the results if it has, so that it doesnt 
@@ -76,27 +95,12 @@ export class Search {
     * @memberof Search
     */
    ngOnInit(){
-        let previousSearch = this.shareService.getDataLocal("animesearch");
-
-        this.kitsuService.getAllCategories().subscribe((result) => {
-            this.categories = result;   
-            this.semanticService.enableAccordion();
-            this.semanticService.enableDropDown();
-        });
-
-        this.kitsuService.getAllGenres().subscribe((result) => {
-            this.genres = result;
-            this.semanticService.enableAccordion();
-            this.semanticService.enableDropDown();
-        });
+        let previousSearch = this.shareService.getDataLocal("anime_search");
 
         for(let i = 1950; i <= (new Date()).getFullYear(); i++){
             this.years.push(i.toString());
         }
 
-
-        this.semanticService.enableAccordion();
-        this.semanticService.enableDropDown();
         if(previousSearch != false){
             this.consoleWrite("PREVSEARCH:");
             this.consoleWrite(previousSearch);
@@ -115,48 +119,60 @@ export class Search {
             this.shareService.searchQuery.next(this.searchquery);
             this.showResults = true;
         }  
+
+
+        this.backEndService.getAllGenres();
+        this.backEndService.getAllCategories();
+        
+        this.semanticService.enableAccordion();
+        this.semanticService.enableDropDown();
     }
 
+    OnSearchResult(result : any){
+        this.results = result;
+        this.shareService.hideLoader();
+        this.showResults = true;
+        let newSearchResult = {
+            query : this.searchquery,
+            result: this.results, 
+            pagenumber : this.currentPage, 
+            categories: this.selectedcategories, 
+            genres : this.selectedgenres, 
+            years: this.selectedyears, 
+            seasons : this.selectedseasons, 
+            types : this.selectedtypes,
+            statusus : this.selectedstatusus,
+            showPagination : this.showPagination
+        };
+         
+        this.shareService.storeDataLocal("anime_search", JSON.stringify(newSearchResult));
+    }
+
+    OnCategories(result: any){
+        this.categories = result;  
+        this.semanticService.enableAccordion();
+        this.semanticService.enableDropDown();
+    }
+
+    OnGenres(result: any){
+        this.genres = result;
+        this.semanticService.enableAccordion();
+        this.semanticService.enableDropDown();
+    }
     /**
      * Async method for executing a search query and stores it using localstorage
      * 
      * @param {string} searchQuery (contains the search query)
      * @memberof Search
      */
-    async search(searchQuery:string){
+    search(searchQuery:string){
+        console.log(searchQuery);
         this.searchquery = searchQuery;
         this.showResults = false;
         this.searchquery = searchQuery;                
         this.shareService.searchQuery.next(this.searchquery);
         this.shareService.showLoaderMessage("Searching");
-        this.kitsuService.searchAnime(searchQuery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated,  5, 0).subscribe((result)=>{
-           this.consoleWrite(result);
-           this.consoleWrite(this.rRated);
-            this.results= result;
-            if(this.results.length >= 99){
-                this.showPagination = true;
-            }
-
-            
-            let newSearchResult = {
-                query : searchQuery,
-                result: this.results, 
-                pagenumber : this.currentPage, 
-                categories: this.selectedcategories, 
-                genres : this.selectedgenres, 
-                years: this.selectedyears, 
-                seasons : this.selectedseasons, 
-                types : this.selectedtypes,
-                statusus : this.selectedstatusus,
-                showPagination : this.showPagination
-            };
-            
-            this.shareService.storeDataLocal("animesearch", JSON.stringify(newSearchResult));
-
-            this.shareService.hideLoader();
-            this.showResults = true;
-        })
-         
+        this.backEndService.searchAnime(searchQuery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated, this.currentPage, 1);
     }
 
     addGenre(genre :any){
@@ -325,101 +341,30 @@ export class Search {
     nextPage(){       
         this.currentPage++;
         
-        this.shareService.showLoaderMessage("Waiting for page.");
-        this.kitsuService.searchAnime(this.searchquery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated,  5, (this.currentPage * 5)).subscribe((result)=>{
-                
-            this.results= result;
-            if(this.results.length >= 99){
-                this.showPagination = true;
-            }
+        this.shareService.showLoaderMessage("Waiting for page: "+ this.currentPage + ".");
 
-            
+        this.backEndService.searchAnime(this.searchquery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated, this.currentPage, 1);
 
-            let newSearchResult = {
-                query : this.searchquery,
-                result: this.results, 
-                pagenumber : this.currentPage, 
-                categories: this.selectedcategories, 
-                genres : this.selectedgenres, 
-                years: this.selectedyears, 
-                seasons : this.selectedseasons, 
-                types : this.selectedtypes,
-                statusus : this.selectedstatusus,
-                showPagination : this.showPagination
-            };                   
-            this.shareService.storeDataLocal("animesearch", JSON.stringify(newSearchResult));
-
-            this.shareService.hideLoader();
-            this.showResults = true;
-        })
+      
     }
 
     prevPage(){
         if(this.currentPage > 0){
             this.currentPage--;
             
-            this.shareService.showLoaderMessage("Waiting for page.");
-            this.kitsuService.searchAnime(this.searchquery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated,  5, (this.currentPage * 5)).subscribe((result)=>{
-                   
-                this.results= result;
-                if(this.results.length >= 99){
-                    this.showPagination = true;
-                }
-    
-                
+            this.shareService.showLoaderMessage("Waiting for page: "+ this.currentPage + ".");
+            this.backEndService.searchAnime(this.searchquery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated, this.currentPage, 1);
 
-                let newSearchResult = {
-                    query : this.searchquery,
-                    result: this.results, 
-                    pagenumber : this.currentPage, 
-                    categories: this.selectedcategories, 
-                    genres : this.selectedgenres, 
-                    years: this.selectedyears, 
-                    seasons : this.selectedseasons, 
-                    types : this.selectedtypes,
-                    statusus : this.selectedstatusus,
-                    showPagination : this.showPagination
-                };                
-                this.shareService.storeDataLocal("animesearch", JSON.stringify(newSearchResult));
-    
-                this.shareService.hideLoader();
-                this.showResults = true;
-            })
         }
     }
 
     specificPage(pageNumber : string){
-        let pNum = Number(pageNumber);
-        this.results = [];
-        if(pNum  < (this.fullresult.length / 100)){
-             
-            this.kitsuService.searchAnime(this.searchquery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated,  5, (this.currentPage * 5)).subscribe((result)=>{
-                   
-                this.results= result;
-                if(this.results.length >= 99){
-                    this.showPagination = true;
-                }
-    
-                
-                let newSearchResult = {
-                    query : this.searchquery,
-                    result: this.results, 
-                    pagenumber : this.currentPage, 
-                    categories: this.selectedcategories, 
-                    genres : this.selectedgenres, 
-                    years: this.selectedyears, 
-                    seasons : this.selectedseasons, 
-                    types : this.selectedtypes,
-                    statusus : this.selectedstatusus,
-                    showPagination : this.showPagination
-                };                
-                this.shareService.storeDataLocal("animesearch", JSON.stringify(newSearchResult));
-    
-                this.shareService.hideLoader();
-                this.showResults = true;
-            })
-            this.currentPage = pNum;
-        }
+        this.currentPage = Number(pageNumber);
+        
+        this.shareService.showLoaderMessage("Waiting for page: "+  this.currentPage + ".");
+        
+        this.backEndService.searchAnime(this.searchquery, this.selectedcategories, this.selectedgenres, this.selectedyears, this.selectedseasons, this.selectedstatusus, this.selectedtypes, this.rRated, this.currentPage, 1);
+
     }
 
     /**

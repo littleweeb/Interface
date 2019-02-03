@@ -50,8 +50,6 @@ export class AnimeInfo{
     //dropdown custom
     dropdownres : string = "All Resolutions";
 
-    //filedir
-    animeDir : string;
 
     //information view
     animeInfo : any;
@@ -106,13 +104,12 @@ export class AnimeInfo{
         this.showEpisodes = true;
         this.showInfo = false;
         this.showTrailer = false;
-        this.animeDir = "";
         this.enableDebug = true;
-        this.possibleresolutions = new Array();
-        
-        this.possibleresolutions.push({value : "720", name : "720p"});
-        this.possibleresolutions.push({value : "480", name : "480p"});
-        this.possibleresolutions.push({value : "1080", name : "1080p"});
+        this.possibleresolutions = new Array();       
+        this.possibleresolutions.push({value : "720P", name : "720p"});
+        this.possibleresolutions.push({value : "480P", name : "480p"});
+        this.possibleresolutions.push({value : "1080P", name : "1080p"});
+        this.possibleresolutions.push({value : "ALL", name : "All"});
 
         this.episodeList= new Array();
         this.movieList = new Array();
@@ -120,6 +117,24 @@ export class AnimeInfo{
         if(this.backEndService.address.indexOf("local") > -1 || this.backEndService.address.indexOf("127.0.0.1") > -1){
             this.isLocal = true;
         }
+
+        this.backEndService.websocketMessages.subscribe((message) => {
+            if(message !== null){
+                console.log(message);
+                switch(message.type){
+                    case "kitsu_anime_info":
+                        this.animeInfo = message;
+                        this.botList = message.anime_bot_sources;
+                        this.semanticui.enableAccordion();
+                        this.semanticui.enableDropDown();
+                        this.doneLoading = true;
+                         this.showError = false;
+                         this.showInfo = true;
+                         this.shareService.hideLoader();
+                        break;
+                }
+            } 
+        });
 
         this.downloadService.updateDownloadList.subscribe((listwithdownloads)=>{
             if(listwithdownloads != null){                
@@ -140,56 +155,7 @@ export class AnimeInfo{
             this.semanticui.enableDropDown();
         });
 
-        this.downloadService.updateAlreadyDownloadedList.subscribe((listwithdownloads)=>{
-            if(listwithdownloads != null){
-                this.consoleWrite("GETTING LIST WITH DOWNLOADS");
-                if(this.waitingToPlay){
-                    
-                    let found = false;
-                    for(let anime of listwithdownloads){
-                        for(let file of anime.downloadHistory){
-                            if(anime.animeInfo.animeid == this.animeInfo.id && this.episodeToPlay.toString() == file.episodeNumber){
-                                this.sendPlayRequest(file);
-                                found = true;
-                                this.waitingToPlay = false;
-                                break;
-                            }
-                        }
-                        if(found){
-                            break;
-                        }
-                    }
-                }  
-                
-                let found = false;
-                for(let anime of listwithdownloads){
-                    for(let file of anime.downloadHistory){
-                        this.consoleWrite("COMPARING FOLLOWING ID:");
-                        this.consoleWrite(anime.animeInfo.animeid);
-                        this.consoleWrite(this.animeInfo.id);
-                        if(file.animeInfo.animeid == this.animeInfo.id){
-                            this.alreadyDownloadedFiles = anime.downloadHistory;
-                            this.showAlreadyDownloaded = true;
-                            this.consoleWrite("FOUND FILES FOR THIS ANIME");
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(found){
-                        break;
-                    }
-                }
-                if(!found){
-                    this.showAlreadyDownloaded =false;
-                    this.alreadyDownloadedFiles = [];
-                }
-                
-            }
-            
-            this.semanticui.enableAccordion();
-            this.semanticui.enableDropDown();
-
-        });
+       
         this.shareService.updatetitle.next(this.title);      
         this.semanticui.enableAccordion();
         this.semanticui.enableDropDown();
@@ -206,7 +172,7 @@ export class AnimeInfo{
         if(possibledefaultresolution != false){
             if(possibledefaultresolution == "all"){
                 this.showAllResolutions = true;
-                this.resolution = ".";
+                this.resolution = "UNKNOWN";
                 this.dropdownres = "All Resolutions";
             } else {
                 this.showAllResolutions = false;
@@ -215,75 +181,32 @@ export class AnimeInfo{
                 this.dropdownres = possibledefaultresolution;
             }
         } else {
-            this.shareService.storeDataLocal("default_resolution", '720');      
+            this.shareService.storeDataLocal("default_resolution", '720P');      
         }
 
-        await this.http.get('https://raw.githubusercontent.com/erengy/anime-relations/master/anime-relations.txt').toPromise().then(animerelations => this.animeRelations= animerelations.text());
-        await this.http.get('https://raw.githubusercontent.com/littleweeb/LittleWeebRules/master/littleweebrules.txt').toPromise().then(littleweebrules => this.littleWeebRules= littleweebrules.text());
-       
-       
-        let getLocalStoredAnime = this.shareService.getDataLocal("animeview");
-        if(getLocalStoredAnime != false){
-           
-            this.botname = "all";
-            let animeView = JSON.parse(getLocalStoredAnime);
-            if(animeView.title != ""){
-              
-                
-                this.showAllBots = animeView.showAllBots;
-                this.showAllResolutions = animeView.showAllResolutions;
-                this.packsSelected = animeView.packsSelected;
-                this.selectedItems = animeView.selectedItems;
-                this.title = animeView.title;
-                this.episodeList= animeView.episodeList;
-                this.movieList = animeView.movieList;
-                this.showList = animeView.showList;
-                this.showError =  animeView.showError;
-                this.botList = animeView.botList;
-                this.prefferedbots = animeView.prefferedbots;
-                this.animeDir = animeView.animeDir;
-                this.animeInfo = animeView.animeInfo;
-                this.enableDebug = true;
-                this.consoleWrite(this.animeInfo);
-                if(this.animeInfo !== undefined){
-                    this.shareService.updatetitle.next(this.animeInfo.animeInfo.canonicalTitle);
-                    this.doneLoading = true;
-                } 
-                
-                
-            }
-            this.semanticui.enableAccordion();
-            this.semanticui.enableDropDown(); 
 
-        }
+        
         this.shareService.animetoshow.take(1).subscribe(async(anime) => {
             if(anime !== null){
                 
                 this.consoleWrite("got mah anime");
                 this.consoleWrite(anime);
-                this.shareService.showLoaderMessage("Loading anime: " + anime.attributes.canonicalTitle );   
+                this.shareService.showLoaderMessage("Loading anime: " + anime.attributes.canonicalTitle + ", the first time might take a few seconds!" );   
                
                 if(this.animeInfo === undefined){
-                    this.animeInfo = this.kitsuService.getAllInfo(anime.id);
-                    this.animeDir = this.animeInfo.animeInfo.canonicalTitle.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,'_');   
-                    this.showList = false;
-                    this.showEpisodes = false;   
-                    this.title =  this.animeInfo.animeInfo.canonicalTitle;     
-                    this.shareService.updatetitle.next(this.title);              
-                    this.showPackListFor(this.animeInfo);
+                    this.backEndService.getAnimeInfo(anime.id);
+                    this.backEndService.getAnimeInfoWithEpisodes(anime.id);
+                    this.title = anime.attributes.canonicalTitle ;     
+                    this.shareService.updatetitle.next(this.title); 
                     
                 } else {
                     if(this.animeInfo.id != anime.id){
-                        this.animeInfo = await this.kitsuService.getAllInfo(anime.id);
-                        this.consoleWrite(this.animeInfo);
-                        this.animeDir = this.animeInfo.animeInfo.canonicalTitle.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,'_');      
-                        this.showList = false;
-                        this.showEpisodes = false;   
-                        this.title =  this.animeInfo.animeInfo.canonicalTitle;  
-                        this.shareService.updatetitle.next(this.title);                   
-                        this.showPackListFor(this.animeInfo);
+                        this.backEndService.getAnimeInfo(anime.id);
+                        this.backEndService.getAnimeInfoWithEpisodes(anime.id);
+                        this.title = anime.attributes.canonicalTitle ;     
+                        this.shareService.updatetitle.next(this.title); 
                     } else {
-                        this.shareService.hideLoader();                        
+                        this.getPreviousPage();                      
                         this.downloadService.getAlreadyDownloaded();
                         this.doneLoading = true;
                     }  
@@ -310,6 +233,38 @@ export class AnimeInfo{
         }, 100);
     }
 
+    getPreviousPage(){
+        let getLocalStoredAnime = this.shareService.getDataLocal("anime_view");
+        if(getLocalStoredAnime != false){
+           
+            let animeView = JSON.parse(getLocalStoredAnime);
+            if(animeView.title != ""){
+              
+                
+                this.showAllBots = animeView.showAllBots;
+                this.showAllResolutions = animeView.showAllResolutions;
+                this.packsSelected = animeView.packsSelected;
+                this.selectedItems = animeView.selectedItems;
+                this.title = animeView.title;
+                this.showError =  animeView.showError;
+                this.prefferedbots = animeView.prefferedbots;
+                this.animeInfo = animeView.animeInfo;
+                this.enableDebug = true;
+                this.consoleWrite(this.animeInfo);
+                if(this.animeInfo !== undefined){
+                    this.shareService.updatetitle.next(this.animeInfo.anime_info.data[0].attributes.canonicalTitle);
+                    this.doneLoading = true;
+                    this.shareService.hideLoader();
+                } 
+                
+                
+            }
+            this.semanticui.enableAccordion();
+            this.semanticui.enableDropDown(); 
+
+        }
+    }
+
     /**
      * Stores currently shown information locally so it doesnt have to reload/request the information if user switches between views
      * 
@@ -324,741 +279,16 @@ export class AnimeInfo{
             packsSelected : this.packsSelected,
             selectedItems : this.selectedItems,
             title : this.title,
-            episodeList: this.episodeList,
-            movieList : this.movieList,
-            showList : this.showList,
             showError : this.showError,
-            botList : this.botList,
             prefferedbots : this.prefferedbots,
             animeInfo : this.animeInfo,
-            enableDebug : this.enableDebug,
-            animeDir : this.animeDir
+            enableDebug : this.enableDebug
         }
         this.consoleWrite(simpleObject);
-        this.shareService.storeDataLocal("animeview", JSON.stringify(simpleObject));
+        this.shareService.storeDataLocal("anime_view", JSON.stringify(simpleObject));
     }
+
    
-    /**
-     * Retreives available files for the requested anime through nibl.co.uk, parses all synonyms and requests the most likely related episodes
-     * uses https://github.com/erengy/anime-relations for retreiving the correct files
-     * 
-     * @param {*} anime 
-     * @memberof AnimeInfo
-     */
-    async showPackListFor(anime : any){
-        
-        //disable views for error AND list (cus no episodes have been added yet)
-
-        //some global stuff     
-        let seasonIdentifiers = new Array();
-
-        for(let i = 0; i < 99; i++){
-            if(i > 0){
-                
-                let numberAsWord = this.utilityService.numberToWords(i);
-                let numberAsRoman = this.utilityService.numberToRoman(i);
-                let numberOrdinal = this.utilityService.numberToOrdinal(i);
-                let numberAsWordWithOrdinal = this.utilityService.numberToWordsWithOrdinal(i);
-
-                let seasonIdentifierObj = {
-                    seasonDelimiter : [" season " + numberAsWordWithOrdinal, " " + numberAsWordWithOrdinal + " season", " season " + numberAsWord, " " + numberAsWord + " season", " " + i.toString() + numberOrdinal + " season", " season " + i.toString(), " " + i.toString() + numberOrdinal, " s" + i.toString(), " " + numberAsRoman + " ", " s0" + i + "e"],
-                    seasonNumber : i
-                }
-
-                seasonIdentifiers.push(seasonIdentifierObj);
-            }else {
-                let seasonIdentifierObj = {
-                    seasonDelimiter : ["season", "s", "st", "nd", "rd", "th"],
-                    seasonNumber : 0
-                }
-
-                seasonIdentifiers.push(seasonIdentifierObj);
-            }
-        }
-
-        this.consoleWrite("SEASON IDENTIFIERS:");
-        this.consoleWrite(seasonIdentifiers);
-
-
-        
-        //get anime relation and parse episode where to start and where to stop:
-        let everyRelation = this.animeRelations.split('#');
-        let startStopEpisodes = new Array();
-        for(let relation of everyRelation){
-
-            let id = '|' + anime.id + '|';
-
-            if(relation.indexOf(id) > -1){
-                this.consoleWrite("Found relation: " + relation + " using id: " + id);
-
-
-                if(relation.indexOf("~ - ") != -1){
-                    relation = relation.split("~ - ")[1];
-                }
-
-                
-                let partWithEpisodeIndex = relation.split("- ")[1];
-                this.consoleWrite("Splitted using the id:");
-                this.consoleWrite(partWithEpisodeIndex.split(id));
-                let leftOrRight = "undefined";
-                
-                if(partWithEpisodeIndex.split(id)[1].indexOf("->") != -1){
-                    leftOrRight = "left";
-                } else {
-                    leftOrRight = "right";
-                }
-
-                let hasWrongSeasonNumbers = false;
-                
-                let startEpisodeString = partWithEpisodeIndex.split(':')[1].split('-')[0];
-                let endEpisodeString = "0";
-                if(partWithEpisodeIndex.split(':')[1].split(' ')[0].indexOf('-') != -1){
-                   endEpisodeString = partWithEpisodeIndex.split(':')[1].split('-')[1].split(" -> ")[0];
-                }
-                
-
-                let shouldStartEpisodeString = partWithEpisodeIndex.split(':')[2].split('-')[0];
-                let shouldEndEpisodeString = "0";
-                if(partWithEpisodeIndex.split(':')[2].indexOf('-') != -1){
-                    shouldEndEpisodeString = partWithEpisodeIndex.split(':')[2].split('-')[1];
-                    if(shouldEndEpisodeString.indexOf('!') > -1){
-                        hasWrongSeasonNumbers = true;
-                        shouldEndEpisodeString = shouldEndEpisodeString.split('!')[0];
-                    }
-                }
-
-                
-
-                
-
-                let newStartStop = {
-                    startEpisode : Number(startEpisodeString),
-                    endEpisode : Number(endEpisodeString),
-                    shouldStartEpisode : Number(shouldStartEpisodeString),
-                    shouldEndEpisode : Number(shouldEndEpisodeString),
-                    hasWrongSeasonNumbers : hasWrongSeasonNumbers,
-                    leftOrRight : leftOrRight
-                }
-
-                if(endEpisodeString != "0" && shouldEndEpisodeString != "0"){                    
-                    startStopEpisodes.push(newStartStop);
-                }
-                break;
-            }
-        }
-
-        this.consoleWrite("Start Stop Episode Numbering: ");
-        this.consoleWrite(startStopEpisodes);
-
-        let littleweebrule = false;
-        let mustinclude = new Array();
-        let mustexclude = new Array();
-        if(this.littleWeebRules.indexOf(anime.id) != -1){
-            this.consoleWrite("Found rule for this anime.");
-
-            let alllines = this.littleWeebRules.split(/\r\n|\r|\n/g);
-            let i = 0;
-            for(let line of alllines){
-
-                if(line.indexOf(anime.id) != -1){
-                    if(line.split('*')[1].trim() == anime.id){
-
-                        this.consoleWrite("all includes");
-                        let allincludes = alllines[i + 1].split('+ ')[1].split(',');
-                        
-                        for(let include of allincludes){
-                            mustinclude.push(include.replace(/`/g, ''));
-                        }
-                        this.consoleWrite(mustinclude);
-                        this.consoleWrite("all excludes");
-                        
-
-                        let allexcludesline = alllines[i + 3].split('$ ')[1];
-
-                        if(allexcludesline !== undefined){
-                            if(allexcludesline.indexOf(',') != -1){
-
-                                let allexcludes = allexcludesline.split(',');
-                                for(let exclude of allexcludes){
-                                    mustexclude.push(exclude.replace(/`/g, ''));
-                                }
-                                this.consoleWrite(mustexclude);
-                            }
-
-                        }
-                        
-                        littleweebrule = true;
-                        break;
-                        
-                      
-                    }
-                }
-                i++;
-            }
-            
-            this.consoleWrite("Episode title MUST contain: ");
-            this.consoleWrite(mustinclude);
-
-        }
-
-
-        this.shareService.showLoaderMessage("Retreiving Synonyms"); 
-
-        //getting all the synonyms
-        let synonyms = new Array();        
-        for(let key in anime.animeInfo.titles){
-            this.consoleWrite(key); 
-            let synonym = anime.animeInfo.titles[key];
-            synonyms.push(synonym);            
-        }
-        this.consoleWrite("synonyms: ");
-        this.consoleWrite(synonyms); 
-
-        //getting season
-        let seasonNumber = 1;
-        let seasonDelimiter = "";
-        for(let seasonIdentifier of seasonIdentifiers){
-            if(seasonIdentifier.seasonNumber > 0){               
-                let found = false;
-                for(let seasonIdentifierString of seasonIdentifier.seasonDelimiter){
-                   if(this.utilityService.createSpaces(anime.animeInfo.canonicalTitle.toLowerCase()).indexOf(seasonIdentifierString) != -1){
-                        found = true;
-                        seasonNumber = seasonIdentifier.seasonNumber;
-                        seasonDelimiter = seasonIdentifierString;
-                        break;
-                    }       
-                }
-                if(found){
-                    break;
-                }
-            }            
-        }
-
-        this.consoleWrite("Found season number:");
-        this.consoleWrite(seasonNumber);
-         this.consoleWrite(seasonDelimiter);
-
-        
-        
-
-        //get all episodes using synonyms 
-        let allEpisodes = new Array();
-
-       
-        let searchQueries = [];
-        for(let synonym of synonyms){
-            let searchQuery = this.utilityService.stripName(synonym);   
-            let wordsInFileName = searchQuery.split(' ');
-            searchQuery = "";
-            for(let word of wordsInFileName){
-                let withoutNumbers = word.replace(/[0-9]/g, "").trim();
-                if(seasonIdentifiers[0].seasonDelimiter.indexOf(withoutNumbers) == -1){
-                    searchQuery += word + " ";
-                }
-            }  
-            if(searchQuery.length > 3){                
-                 searchQueries.push(searchQuery);
-            } 
-            if(synonym.length > 3){                
-                searchQueries.push(synonym);
-            }      
-
-            if(seasonNumber > 1){
-                searchQuery = synonym.toLowerCase().split(seasonDelimiter)[0];
-
-                let seasonIdentifierBe = seasonIdentifiers[seasonNumber];
-                for(let identifier of seasonIdentifierBe.seasonDelimiter){
-                    if(searchQuery.indexOf(identifier)){
-                        searchQuery = searchQuery.split(identifier)[0];
-                    }
-                }                
-                searchQueries.push(searchQuery)
-            } 
-            if(synonym.indexOf(':') != -1){
-                searchQuery = synonym.split(':')[0];
-                searchQueries.push(this.utilityService.stripName(searchQuery));
-            }
-                
-            
-        }
-
-        // get bot list and bind bot index to name
-    
-
-        this.niblService.getSearchAnimeResultsMulti(searchQueries).subscribe(async(result) =>{
-            this.shareService.showLoaderMessage("Retreiving episodes"); 
-             //makes it easier on the loop for getting the bot (Doesn't have to roll through the botlist over and over for each file)
-            let botsWithId = {};
-
-            let bots = await this.niblService.getBotListSync();
-            //appends botname to index botid
-            for(let bot of bots){
-                botsWithId[bot.id] = bot.name;
-            }
-
-            this.consoleWrite("The following episodes were found on nibl:");
-            this.consoleWrite(result);
-            for(let file of result){
-                if(allEpisodes.indexOf(file) == -1){ 
-                    for(let searchQuery of searchQueries){ 
-                        let found = false; 
-                        for(let filealreadyadded of allEpisodes){
-                            if(filealreadyadded.botId == file.botId && filealreadyadded.number == file.number){
-                                found = true;
-                            }
-                        }
-                        if(!found){   
-                            if(this.utilityService.compareNames(this.utilityService.stripName(file.name), this.utilityService.stripName(this.animeInfo.animeInfo.canonicalTitle)) > 10){
-                                file.season = seasonNumber;
-                                allEpisodes.push(file);
-                            }
-                        }
-                    }  
-                }
-            }
-
-            this.consoleWrite(allEpisodes);
-
-            this.consoleWrite("Following start stop was found within anime-relations:");
-            this.consoleWrite(startStopEpisodes);
-            let parsedEpisodeFiles = new Array();
-            for(let episodeFile of allEpisodes){
-
-                if(episodeFile.episodeNumber == -1){
-                    //possibly contains episode numbers with this syntax: s0xe0x
-                    let episodename = episodeFile.name.toLowerCase();
-                    if(episodename.indexOf('s' + seasonNumber.toString()) != -1){
-                        let firstpart = episodename.split('s' + seasonNumber.toString())[1];
-                        if(firstpart.indexOf('.') != -1){
-                            let secondpart = firstpart.split('.')[1];
-                            episodeFile.episodeNumber = Number(secondpart);
-                           
-                        }
-                       
-                        if(firstpart.indexOf('e') != -1 ){
-                            let secondpart = firstpart.split('e')[1];
-                           
-                            episodeFile.episodeNumber = Number(secondpart.split(' ')[0]);
-                        } 
-                        
-                    } else if(episodename.indexOf('s0' + seasonNumber.toString()) != -1){
-                        
-                        let firstpart = episodename.split('s0' + seasonNumber.toString())[1];
-                        
-                        if(firstpart.indexOf('.') != -1){
-                            let secondpart = firstpart.split('.')[1];
-                            if(secondpart.indexOf('.') != -1){
-                                episodeFile.episodeNumber = Number(secondpart.split('.')[0]);
-                            }
-                            if(secondpart.indexOf(' ') != -1){
-                                episodeFile.episodeNumber = Number(secondpart.split(' ')[0]);
-                            }
-                        }
-                        if(firstpart.indexOf('e') != -1 ){
-                            let secondpart = firstpart.split('e')[1];
-                            if(secondpart.indexOf('.') != -1){
-                                episodeFile.episodeNumber = Number(secondpart.split('.')[0]);
-                            }
-                            if(secondpart.indexOf(' ') != -1){
-                                episodeFile.episodeNumber = Number(secondpart.split(' ')[0]);
-                            }
-                        } 
-                       
-                    }
-                }
-
-                if(startStopEpisodes.length > 0){
-
-                    let epNum = episodeFile.episodeNumber;
-
-                    let start = 0;
-                    let stop = 0;
-
-                    if(startStopEpisodes[0].leftOrRight == "left"){
-                        start = 0;
-                        stop = startStopEpisodes[0].endEpisode;
-                        if(seasonNumber > 1){
-                            if(epNum >= start && epNum <= stop){  
-
-                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                    parsedEpisodeFiles.push(episodeFile);
-                                }
-                            } 
-                        } else {
-                            if(epNum <= startStopEpisodes[0].startEpisode){         
-                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                         
-                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                    parsedEpisodeFiles.push(episodeFile);
-                                }
-                            } 
-                        }
-                    
-                    } else {
-                        
-                        start = startStopEpisodes[0].startEpisode;
-                        stop = startStopEpisodes[0].endEpisode;
-                        if(!isNaN(stop)){
-                            let amountofepisodes = stop - start;
-                            let seasonIdentifier = seasonIdentifiers[seasonNumber];
-                            if(epNum >= start && epNum <= stop){
-
-                                let foundseasonident = false;
-                                if(seasonNumber > 1){
-                                    for(let seasonIdentifierString of seasonIdentifier.seasonDelimiter){
-                                        if(this.utilityService.createSpaces(episodeFile.name.toLowerCase()).indexOf(seasonIdentifierString) != -1){                                    
-                                            foundseasonident = true;
-                                            break;
-                                        }
-                                    }
-                                } 
-                                if(!foundseasonident){
-                                    episodeFile.episodeNumber = episodeFile.episodeNumber - start + 1;
-                                }             
-                                 
-                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                    parsedEpisodeFiles.push(episodeFile);
-                                }
-                            } else {
-                                
-                                  if(seasonNumber > 1){
-                                        for(let seasonIdentifierString of seasonIdentifier.seasonDelimiter){
-                                            if(this.utilityService.createSpaces(episodeFile.name.toLowerCase()).indexOf(seasonIdentifierString) != -1){                                          
-                                                
-                                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                                    parsedEpisodeFiles.push(episodeFile);
-                                                }
-                                                break;
-                                            }
-                                        }
-                                   
-                                }  else {
-                                    
-                                   
-                                    for(let synonym of synonyms){
-                                        if(this.utilityService.compareNames(this.utilityService.stripName(episodeFile.name), this.utilityService.stripName(synonym)) > 50){
-                                            if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                                episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                                parsedEpisodeFiles.push(episodeFile);
-                                            }
-                                            break;
-                                        }
-                                    }
-                                } 
-                            }
-                        } else {
-                            let seasonIdentifier = seasonIdentifiers[seasonNumber];
-                            if(epNum >= start){
-                                let foundseasonident = false;
-                                if(seasonNumber > 1){
-                                    for(let seasonIdentifierString of seasonIdentifier.seasonDelimiter){
-                                        if(this.utilityService.createSpaces(episodeFile.name.toLowerCase()).indexOf(seasonIdentifierString) != -1){                                    
-                                            foundseasonident = true;
-                                            break;
-                                        }
-                                    }
-                                } 
-                                if(!foundseasonident){
-                                    episodeFile.episodeNumber = episodeFile.episodeNumber - start + 1;
-                                }             
-                                
-                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                    parsedEpisodeFiles.push(episodeFile);
-                                }
-                            } else {
-                                
-                                if(seasonNumber > 1){
-                                        for(let seasonIdentifierString of seasonIdentifier.seasonDelimiter){
-                                            if(this.utilityService.createSpaces(episodeFile.name.toLowerCase()).indexOf(seasonIdentifierString) != -1){                                     
-                                                
-                                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                                    parsedEpisodeFiles.push(episodeFile);
-                                                }
-                                                break;
-                                            }
-                                        }
-                                   
-                                }  else {
-                                    
-                                    for(let synonym of synonyms){
-                                        if(this.utilityService.compareNames(this.utilityService.stripName(episodeFile.name), this.utilityService.stripName(synonym)) > 30){
-
-                                            let found = false;
-                                            let seasonnumber = 0;
-                                            let wordsoftitle = this.utilityService.stripName(episodeFile.name).split(' ');
-                                            for(let word of wordsoftitle){
-                                                for(let seasonIdent of seasonIdentifiers){
-                                                    for(let ident of seasonIdent.seasonDelimiter){
-
-                                                        if(ident.indexOf(word) != -1){
-                                                            found = true;
-                                                        }
-                                                    }
-                                                    if(found){
-                                                        seasonnumber = seasonIdent.seasonNumber;
-                                                        break;
-                                                    }
-                                                }
-                                                if(found){
-                                                    break;
-                                                }
-                                            }
-
-                                            if(!found || seasonnumber == seasonNumber){
-                                                
-                                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){
-                                                                          
-                                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                                    parsedEpisodeFiles.push(episodeFile);
-                                                }
-                                            }                                          
-                                            break;
-                                        }
-                                    }
-                                } 
-                            }
-                        }                      
-                    }                
-                } else { 
-                    
-                    if(seasonNumber > 1){
-                        
-                        let seasonIdentifier = seasonIdentifiers[seasonNumber];
-                        for(let seasonIdentifierString of seasonIdentifier.seasonDelimiter){
-                            if(this.utilityService.createSpaces(episodeFile.name.toLowerCase()).indexOf(seasonIdentifierString) != -1){      
-                              
-                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){;                           
-                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-
-                                    parsedEpisodeFiles.push(episodeFile);
-                                    break;
-                                }
-                            }
-                        }
-                    } else {         
-                                        
-   
-                        for(let synonym of synonyms){
-                            if(littleweebrule){
-                                
-                                if(this.checkForRule(episodeFile.name, littleweebrule, mustinclude, mustexclude)){                                                            
-                                    episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId); 
-                                    parsedEpisodeFiles.push(episodeFile);
-                                    break;                             
-                                } 
-                            }
-                            else {        
-                                                                                                 
-                                episodeFile.botId =  this.addBotToBotList(episodeFile.botId, botsWithId);  
-                                parsedEpisodeFiles.push(episodeFile);   
-                                break;       
-                            }
-                        }
-                    }
-                }
-            }
-            this.consoleWrite("Following files were parsed:");   
-            this.consoleWrite(parsedEpisodeFiles);
-            this.consoleWrite("Following bots were parsed:");
-            this.consoleWrite(this.botList);
-            //index by episode
-
-
-
-            this.episodeList = new Array();
-            
-            this.movieList = new Array();
-            let tempEpListBe =  new Array();
-
-            for(let parsedFile of parsedEpisodeFiles){
-                let epNum = parsedFile.episodeNumber;
-                
-                if(epNum > this.utilityService.getEpisodeNumber(parsedFile.name) && epNum != -1 && parsedFile.season == 1 ){
-                    epNum = this.utilityService.getEpisodeNumber(parsedFile.name);
-                    if(epNum == 0 ){
-                        epNum = parsedFile.episodeNumber;
-                    }
-                }
-                
-                this.consoleWrite(epNum);
-                if(epNum && parsedFile.botId != false){
-                    if(this.animeInfo.animeInfo.subtype == "TV"){
-                        
-                        if(this.episodeList === null){
-                            this.episodeList = new Array();
-                        }
-                        if(this.episodeList[epNum] === undefined){
-                            this.episodeList[epNum] = new Array();
-                            this.episodeList[epNum].push({episodeNumber: epNum, episodeTitle: "Episode " + epNum, files: [parsedFile]}); 
-                            
-                            tempEpListBe[epNum] = new Array();
-                            tempEpListBe[epNum].push(parsedFile);
-                        } else {
-                            tempEpListBe[epNum].push(parsedFile);
-                            var obj = this.episodeList[epNum][0];
-                            obj.files=tempEpListBe[epNum];
-                            this.episodeList[epNum][0] = obj;
-                        }
-                    } else {
-                        if(epNum == -1){
-                            epNum = 1;
-                            if(this.movieList === null){
-                                this.movieList = new Array();
-                            }
-                            if(this.movieList[epNum] === undefined){
-                                this.movieList[epNum] = new Array();
-                                this.movieList[epNum].push(parsedFile);
-                            } else {
-                                this.movieList[epNum].push(parsedFile);
-                            }
-                        }
-                        
-                    }
-                }
-            }
-
-            
-            this.consoleWrite("Following episodes were indexed before last pass:");
-            this.consoleWrite(this.episodeList);
-            
-            this.consoleWrite("Following movies were indexed before last pass:");
-            this.consoleWrite(this.movieList);
-            if(this.episodeList[0] === undefined){
-                this.episodeList[0] = "not defined";
-            }
-            if(this.movieList[0] === undefined){
-                this.movieList[0] = "not defined";
-            }
-
-            for(let i = 0; i < this.episodeList.length; i++){
-                if(this.episodeList[i] === undefined){
-                    this.episodeList.splice(i, this.episodeList.length - i);
-                    break;
-                }
-            }
-
-            for(let i = 0; i < this.movieList.length; i++){
-                if(this.movieList[i] === undefined || this.movieList[i] === null){
-                    this.movieList.splice(i, this.movieList.length - i);
-                    break;
-                }
-            }
-
-        
-            this.consoleWrite("Following episodes were indexed:");
-            this.consoleWrite(this.episodeList);
-            
-            this.consoleWrite("Following movies were indexed:");
-            this.consoleWrite(this.movieList);
-
-            this.showEpisodes = true;
-            this.showList = true;
-            this.shareService.hideLoader();
-            this.semanticui.enableAccordion();
-            this.semanticui.enableDropDown();
-            setTimeout(()=>{                
-                this.semanticui.enableAccordion();
-                this.semanticui.enableDropDown();
-            }, 1000);
-            
-            this.downloadService.getAlreadyDownloaded();
-            this.doneLoading = true;
-        });
-
-        
-
-    }
-    
-    /**
-     * Check if rule should be used, if so, return true when rule applies, if rule should not be used, always return true.
-     * 
-     * @param {string} epname (episode name where rule should be aplied upon)
-     * @param {boolean} littleweebrule (check if rule should be used)
-     * @param {*} mustinclude (the values that should be used to test if rule applies)
-     * @returns (boolean, true when rule applies, true when no rule found, false if rule doesn't apply)
-     * @memberof AnimeInfo
-     */
-    checkForRule(epname : string , littleweebrule :boolean, mustinclude:any, mustexclude:any){
-        if(littleweebrule){
-            let includes = false;
-            let excludes = true;
-            
-            if(mustinclude.length >= 1 && mustexclude.length >= 1){
-                for(let include of mustinclude){
-                    let mustcontain = include.toLowerCase();
-                    let words = epname.toLowerCase();
-    
-                    if(words.indexOf(mustcontain) != -1){
-                        includes = true;
-                        break;
-                    }
-                }
-
-                for(let exclude of mustexclude){
-                    let mustcontain = exclude.toLowerCase();
-                    let words = epname.toLowerCase();
-    
-                    if(words.indexOf(mustcontain) != -1){
-                        excludes = false;
-                        break;
-                    }
-                }
-                if(includes && !excludes){                                        
-                    return false;
-                } 
-                return true;
-            } else if(mustinclude.length >= 1){
-                for(let include of mustinclude){
-                    let mustcontain = include.toLowerCase();
-                    let words = epname.toLowerCase();
-                    if(words.indexOf(mustcontain) != -1){
-                        includes = true;
-                        return true;
-                    }
-                }
-                return false;
-            } else {
-                return false;
-            }
-           
-        
-
-            
-            
-        } else {                                      
-            return true;
-        }
-    }
-
-    /**
-     * Add bot to botlist of parsed file
-     * 
-     * @param {number} id (id of bot)
-     * @param {*} botsWithId (array with bots and related id)
-     * @returns 
-     * @memberof AnimeInfo
-     */
-    addBotToBotList(id : number, botsWithId : any){
-        let botname = botsWithId[id];                
-        if(botname === undefined){
-           return false;
-        }
-        if(this.botList.indexOf(botname) == -1){                                                                        
-            this.botList.push(botname);                                                                                 
-        }
-        return botname; 
-    }
     
     /**
      * Opens all collapsed accordions with episode files (only in advanced mode)
@@ -1091,7 +321,7 @@ export class AnimeInfo{
     * 
     * @memberof AnimeInfo
     */
-   batchAll(){       
+    batchAll(){       
         var i = 0;
         let batchDownloads = [];
         for(i=0; i < this.episodeList.length;i++){
@@ -1103,7 +333,7 @@ export class AnimeInfo{
                         this.consoleWrite("Found best file:");
                         this.consoleWrite(file);
                         var genid = this.utilityService.generateId(file.botId, file.number);
-                        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: file.episodeNumber, pack : file.number, bot: file.botId, filename: file.name, filesize: file.size, status : "Waiting", progress : "0", speed : "0", dir : this.animeDir};
+                        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: file.episodeNumber, pack : file.number, bot: file.botId, filename: file.name, filesize: file.size, status : "Waiting", progress : "0", speed : "0"};
                         batchDownloads.push(newDownload);
                         break;
                     } else if(file.name.indexOf(this.resolution)  != -1){
@@ -1112,7 +342,7 @@ export class AnimeInfo{
                         //this.appendToDownloadsDirectly(file);
 
                         var genid = this.utilityService.generateId(file.botId, file.number);
-                        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: file.episodeNumber, pack : file.number, bot: file.botId, filename: file.name, filesize: file.size, status : "Waiting", progress : "0", speed : "0", dir : this.animeDir};
+                        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: file.episodeNumber, pack : file.number, bot: file.botId, filename: file.name, filesize: file.size, status : "Waiting", progress : "0", speed : "0"};
                         batchDownloads.push(newDownload);
                         break;
                     }
@@ -1225,7 +455,7 @@ export class AnimeInfo{
     appendToDownloadsDirectly(download: any){
         var genid = this.utilityService.generateId(download.botId, download.number);
 
-        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: download.episodeNumber, pack : download.number, bot: download.botId, filename: download.name, filesize: download.size, status : "Waiting", progress : "0", speed : "0", dir : this.animeDir};
+        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: download.episodeNumber, pack : download.number, bot: download.botId, filename: download.name, filesize: download.size, status : "Waiting", progress : "0", speed : "0"};
         this.downloadService.addDownload(newDownload);
         
         this.shareService.showMessage("succes", "Added to Downloads!");

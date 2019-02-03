@@ -165,11 +165,13 @@ export class AppComponent  {
      */
     async ngOnInit(){
 
+        var base = window.location.origin.split('://')[1].split('/')[0];
+        if(base.indexOf(':') > -1){
+            base = base.split(':')[0];
+        }
+        base = base + ":1515";
 
-        let connectionAddress = this.shareService.getDataLocal('backEndConnectionAddress');
-        if(!connectionAddress){
-            this.shareService.storeDataLocal('backEndConnectionAddress', "ws://127.0.0.1:1515");
-        } 
+        this.shareService.storeDataLocal('backEndConnectionAddress', "ws://" + base);
 
         this.backEndService.tryConnecting();
 
