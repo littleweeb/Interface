@@ -110,68 +110,55 @@ export class BackEndService {
        
        this.shareService.showMessage('success', "Waiting for backend.");
 
+        this.shareService.showMessage('error', "Not connected, retrying.");
+        let connectionAddress = this.shareService.getDataLocal('backEndConnectionAddress');
+        if(!connectionAddress){
+            this.shareService.storeDataLocal('backEndConnectionAddress', "ws://127.0.0.1:1515");
+            connectionAddress = "ws://127.0.0.1:1515";
+        } 
 
-       let tryconnectinterval = setInterval(()=>{
-            if(!this.webSocketConnected){
+        this.address = connectionAddress;
+        //this.shareService.showLoaderMessage("Waiting for connection to backend!");
+        this.websocket = new WebSocket(this.address);
+            
+        this.websocket.onopen = (evt : any) =>{
+            this.shareService.showLoaderMessage("Waiting for connection to IRC!");
+            this.webSocketConnected = true;
+            console.log(evt);
+            
+            this.websocketMessages.next({"type" : "websocketstatus", "status":"Connected."});
+            this.interval = setInterval(()=>{
+                if(this.messageQue.length >= 1){
+                    if(this.canSend){
+                        this.canSend = false;
+                        this.websocket.send(this.messageQue[0]);
+                        this.messageQue.splice(0, 1);
+                    }
+                }
+            }, 10);
+        };
+        this.websocket.onmessage = (evt : any) => {
+            try{     
+                let parsed = JSON.parse(evt.data);     
+                this.shareService.webSocketLog.push(parsed);
+                this.websocketMessages.next(parsed);
+
+            } catch (e){
                 
-                this.shareService.showMessage('error', "Not connected, retrying.");
-                let connectionAddress = this.shareService.getDataLocal('backEndConnectionAddress');
-                if(!connectionAddress){
-                    this.shareService.storeDataLocal('backEndConnectionAddress', "ws://127.0.0.1:1515");
-                    connectionAddress = "ws://127.0.0.1:1515";
-                } 
-    
-                this.address = connectionAddress;
-                //this.shareService.showLoaderMessage("Waiting for connection to backend!");
-                this.websocket = new WebSocket(this.address);
-                    
-                this.websocket.onopen = (evt : any) =>{
-                    this.shareService.showLoaderMessage("Waiting for connection to IRC!");
-                    this.webSocketConnected = true;
-                    console.log(evt);
-                    
-                    this.websocketMessages.next({"type" : "websocketstatus", "status":"Connected."});
-                    this.interval = setInterval(()=>{
-                        if(this.messageQue.length >= 1){
-                            if(this.canSend){
-                                this.canSend = false;
-                                this.websocket.send(this.messageQue[0]);
-                                this.messageQue.splice(0, 1);
-                            }
-                        }
-                    }, 10);
-                };
-                this.websocket.onmessage = (evt : any) => {
-                    try{     
-                        let parsed = JSON.parse(evt.data);     
-                        this.shareService.webSocketLog.push(parsed);
-                        this.websocketMessages.next(parsed);
-    
-                    } catch (e){
-                        
-                        this.shareService.webSocketLog.push({"error_parsing" : evt.data});
-                        this.websocketMessages.next({"error" : "parsing-messesage: '" + evt.data + "'"});
-                        this.consoleWrite(e);
-                    }
-    
-                    if(this.shareService.webSocketLog.length > 1000){
-                        this.shareService.webSocketLog.splice(0);
-                    }
-                }
-                this.websocket.onclose = (evt : any)=>{
-                    this.webSocketConnected = false;
-                    this.websocketMessages.next({"type" : "websocketstatus", "status":"Disconnected."});                
-                    clearInterval(this.interval);
-                    this.tryConnecting();
-                }
-           } else {
-               this.shareService.hideLoader();     
-               
-               this.shareService.showMessage('success', "Connected to backend!");
-               console.log("Websocket client connected!");          
-               clearInterval(tryconnectinterval);
-           }        
-       }, 5000);
+                this.shareService.webSocketLog.push({"error_parsing" : evt.data});
+                this.websocketMessages.next({"error" : "parsing-messesage: '" + evt.data + "'"});
+                this.consoleWrite(e);
+            }
+
+            if(this.shareService.webSocketLog.length > 1000){
+                this.shareService.webSocketLog.splice(0);
+            }
+        }
+        this.websocket.onclose = (evt : any)=>{
+            this.webSocketConnected = false;
+            this.websocketMessages.next({"type" : "websocketstatus", "status":"Disconnected."});                
+            clearInterval(this.interval);
+        }
       
     }
 
@@ -269,7 +256,7 @@ export class BackEndService {
         this.sendMessage({"action":"get_anime_profile", "extra":{"id":id}});     
     }  
 
-    getAllCurrentlyAiring(botId : number = 21, likeness : number = 0.5, niblnotfound : boolean = false){        
+    getAllCurrentlyAiring(botId : number = 21, likeness : number = 0.6, niblnotfound : boolean = false){        
         this.sendMessage({"action":"get_currently_airing",  "extra" : {"likeness" : likeness, "botid": botId, "nonniblfoundanime":niblnotfound}});     
     } 
 

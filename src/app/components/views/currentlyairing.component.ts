@@ -56,8 +56,6 @@ export class CurrentlyAiring {
                     this.latestAired = message.result;
                     this.shareService.hideLoader();
                     
-                    var seconds = new Date().getTime() / 1000;
-                    this.shareService.storeDataLocal("currently_airing",JSON.stringify( {currentTime: seconds, airing: message.result }));
                     this.shareService.showMessage("succes", "Currently Airing Updated!");     
                 }
             }
@@ -75,26 +73,8 @@ export class CurrentlyAiring {
         this.shareService.showLoaderMessage("Loading currently airing!");
 
         var data;
-        var retreiveAiring = this.shareService.getDataLocal("currently_airing");
-        if(retreiveAiring != false){                         
-              
-            var airing = JSON.parse(retreiveAiring);
-            var seconds = new Date().getTime() / 1000;
-            this.shareService.showMessage("succes", "Loading Cached CurrentlyAiring - aprox " + Math.round((seconds - airing.currentTime)) + " before refresh!"); 
-            this.latestAired = airing.airing; 
-            this.showCurAir = true;
-            this.shareService.hideLoader();
-            if(seconds - airing.currentTime > 100){
-                
-                this.shareService.showMessage("succes", "Updating currently airing."); 
-           
-                this.backEndService.getAllCurrentlyAiring();
-            }
-            
-        } else {
-
-            this.backEndService.getAllCurrentlyAiring();
-        }    
+   
+        this.backEndService.getAllCurrentlyAiring();
 
     }
     

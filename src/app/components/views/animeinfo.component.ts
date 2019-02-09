@@ -46,6 +46,8 @@ export class AnimeInfo{
     downloads : any[];
     alreadyDownloadedFiles : any[];
     fileExtensions : any[] = [".mkv", ".mp4", ".avi"];
+    currentPage: number = 0;
+    localObject : Object;
 
     //dropdown custom
     dropdownres : string = "All Resolutions";
@@ -123,6 +125,7 @@ export class AnimeInfo{
                 console.log(message);
                 switch(message.type){
                     case "kitsu_anime_info":
+                        console.log("ANIME INFO!!!");
                         this.animeInfo = message;
                         this.botList = message.anime_bot_sources;
                         this.semanticui.enableAccordion();
@@ -205,11 +208,7 @@ export class AnimeInfo{
                         this.backEndService.getAnimeInfoWithEpisodes(anime.id);
                         this.title = anime.attributes.canonicalTitle ;     
                         this.shareService.updatetitle.next(this.title); 
-                    } else {
-                        this.getPreviousPage();                      
-                        this.downloadService.getAlreadyDownloaded();
-                        this.doneLoading = true;
-                    }  
+                    } 
                 }
                
             } else {
@@ -646,6 +645,37 @@ export class AnimeInfo{
                                         Download
                                      </a>
                                      `);
+    }
+
+    prevPage(){
+        if(this.currentPage > 0){
+            this.currentPage--;
+            this.backEndService.getAnimeInfoWithEpisodes(this.animeInfo.anime_id, this.currentPage);
+        }
+    }
+
+    nextPage(){
+        if(this.currentPage <= this.animeInfo.anime_total_episode_pages){
+            this.currentPage++;
+            this.backEndService.getAnimeInfoWithEpisodes(this.animeInfo.anime_id, this.currentPage);
+        }
+    }
+
+    specificPage(page : number){
+        if(page <= this.animeInfo.anime_total_episode_pages){
+            this.currentPage = page;
+            this.backEndService.getAnimeInfoWithEpisodes(this.animeInfo.anime_id, this.currentPage);
+        }        
+    }
+
+    lastPage(){
+        this.currentPage = this.animeInfo.anime_total_episode_pages;
+        this.backEndService.getAnimeInfoWithEpisodes(this.animeInfo.anime_id, this.currentPage);
+    }
+
+    firstPage(){
+        this.currentPage = this.animeInfo.anime_total_episode_pages;
+        this.backEndService.getAnimeInfoWithEpisodes(this.animeInfo.anime_id);
     }
 
     /**
