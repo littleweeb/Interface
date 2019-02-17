@@ -53,7 +53,13 @@ export class CurrentlyAiring {
             if(message !== null){
                 if(message.type == "anime_info_currently_airing"){
                     console.log(message);
-                    this.latestAired = message.result;
+                    if(this.latestAired !== undefined){
+                        if(this.latestAired.updated != message.result.updated){
+                            this.latestAired = message.result;
+                        }
+                    } else {
+                        this.latestAired = message.result;
+                    }
                     this.shareService.hideLoader();
                     
                     this.shareService.showMessage("succes", "Currently Airing Updated!");     
@@ -74,7 +80,10 @@ export class CurrentlyAiring {
 
         var data;
    
-        this.backEndService.getAllCurrentlyAiring();
+        this.backEndService.getAllCurrentlyAiring(false);
+        this.backEndService.getAllCurrentlyAiring(true);
+
+
 
     }
     

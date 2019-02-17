@@ -2,7 +2,7 @@
     <div *ngIf="showCurAir">
         <div class="ui horizontal divider"> Currently Airing </div>
         <div class="ui divider"> </div>
-        <div class="ui link cards " >
+        <div class="ui link cards " *ngIf="latestAired !== undefined" >
                            
             <div class="card tooltip card-custom-width-ssml-currentlyairing" *ngFor="let anime of latestAired.airing_ordered" (click)="showAnimeInfoFor(anime)" (mouseenter)="setPopUpContent(anime.attributes.canonicalTitle)"   >
                 <span class="tooltiptext">{{fulltitle}}</span>

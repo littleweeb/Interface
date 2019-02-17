@@ -256,8 +256,8 @@ export class BackEndService {
         this.sendMessage({"action":"get_anime_profile", "extra":{"id":id}});     
     }  
 
-    getAllCurrentlyAiring(botId : number = 21, likeness : number = 0.6, niblnotfound : boolean = false){        
-        this.sendMessage({"action":"get_currently_airing",  "extra" : {"likeness" : likeness, "botid": botId, "nonniblfoundanime":niblnotfound}});     
+    getAllCurrentlyAiring(cached: boolean = false, botId : number = 21){        
+        this.sendMessage({"action":"get_currently_airing",  "extra" : {"cached" : cached, "bot_id":botId}});     
     } 
 
     getAllGenres(){
