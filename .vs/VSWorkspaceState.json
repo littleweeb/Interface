@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\components",
+    "\\src\\app\\components\\views",
+    "\\src\\app\\components\\views\\html",
+    "\\src\\environments"
+  ],
+  "SelectedNode": "\\src\\app\\components\\views\\html\\animeinfo.component.html",
+  "PreviewInSolutionExplorer": false
+}

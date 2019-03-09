@@ -124,39 +124,40 @@ export class AnimeInfo{
             if(message !== null){
                 console.log(message);
                 switch(message.type){
-                    case "kitsu_anime_info":
-                        console.log("ANIME INFO!!!");
-                        this.animeInfo = message;
-                        this.botList = message.anime_bot_sources;
-                        this.semanticui.enableAccordion();
-                        this.semanticui.enableDropDown();
-                        this.doneLoading = true;
-                         this.showError = false;
-                         this.showInfo = true;
-                         this.shareService.hideLoader();
-                        break;
+                  case "kitsu_anime_info":
+                      console.log("ANIME INFO!!!");
+                      this.animeInfo = message;
+                      this.botList = message.anime_bot_sources;
+                      this.semanticui.enableAccordion();
+                      this.semanticui.enableDropDown();
+                      this.doneLoading = true;
+                        this.showError = false;
+                        this.showInfo = true;
+                        this.shareService.hideLoader();
+                    break;
+                  case "download_queue":
+                    this.downloads = message.downloadQueue;
+                    this.showDownload = true;
+                    break;
+                  case "download_update":
+                    if (this.animeInfo.anime_id !== undefined) {
+                      if (message.anime_id == this.animeInfo.anime_id) {
+                        let index = 0;
+                        for (let download of this.downloads) {
+                          if (download.id == message.id) {
+                            this.downloads[index] = message;
+                            console.log(this.downloads);
+                            console.log(index)
+                          }
+                          index++;
+                        }
+                      }
+                    }
+                    break;
                 }
             } 
         });
-
-        this.downloadService.updateDownloadList.subscribe((listwithdownloads)=>{
-            if(listwithdownloads != null){                
-                this.downloads = []; 
-                for(let download of listwithdownloads){
-                
-                    if(download.animeInfo.animeid == this.animeInfo.id){
-                        this.downloads.push(download);
-                    }
-                }
-                this.showDownload = true;  
-            } else {
-                this.downloads = []; 
-                this.showDownload = false;
-            }
-            
-            this.semanticui.enableAccordion();
-            this.semanticui.enableDropDown();
-        });
+     
 
        
         this.shareService.updatetitle.next(this.title);      
@@ -197,14 +198,14 @@ export class AnimeInfo{
                 this.shareService.showLoaderMessage("Loading anime: " + anime.attributes.canonicalTitle + ", the first time might take a few seconds!" );   
                
                 if(this.animeInfo === undefined){
-                    this.backEndService.getAnimeInfo(anime.id);
+                   // this.backEndService.getAnimeInfo(anime.id);
                     this.backEndService.getAnimeInfoWithEpisodes(anime.id);
                     this.title = anime.attributes.canonicalTitle ;     
                     this.shareService.updatetitle.next(this.title); 
                     
                 } else {
                     if(this.animeInfo.id != anime.id){
-                        this.backEndService.getAnimeInfo(anime.id);
+                        //this.backEndService.getAnimeInfo(anime.id);
                         this.backEndService.getAnimeInfoWithEpisodes(anime.id);
                         this.title = anime.attributes.canonicalTitle ;     
                         this.shareService.updatetitle.next(this.title); 
@@ -363,24 +364,27 @@ export class AnimeInfo{
         this.consoleWrite(i);
         this.consoleWrite(this.episodeList);
 
-        if(this.episodeList[i] != "not defined"){
-            let files = this.episodeList[i][0].files;
-            this.consoleWrite(files);
-            for(let file of files){
-                if(this.prefferedbots.indexOf[file.botId] && file.name.indexOf(this.resolution) != -1){
-                    this.consoleWrite("Found best file:");
-                    this.consoleWrite(file);
-                    this.appendToDownloadsDirectly(file);
-                    break;
-                } else if(file.name.indexOf(this.resolution)  != -1){
-                    this.consoleWrite("Found best file:");
-                    this.consoleWrite(file);                
-                    this.appendToDownloadsDirectly(file);
-                    break;
-                }
-            }
-        }
-       
+        if (this.animeInfo.anime_episodes !== undefined) {
+
+          let page = Math.trunc((i / this.animeInfo.anime_episodes_per_page) * 100) / 100;
+
+          let episodes = this.animeInfo.anime_episodes[page];
+          for (let episode of episodes) {
+            for (let file of episode.files[this.resolution]) {
+              if (this.prefferedbots.indexOf[file.BotName]) {
+                this.consoleWrite("Found best file:");
+                this.consoleWrite(file);
+                this.appendToDownloadsDirectly(file);
+                break;
+              } else  {
+                this.consoleWrite("Found best file:");
+                this.consoleWrite(file);
+                this.appendToDownloadsDirectly(file);
+                break;
+              }
+            }              
+          }
+        }     
 
     }
 
@@ -452,9 +456,17 @@ export class AnimeInfo{
      * @memberof AnimeInfo
      */
     appendToDownloadsDirectly(download: any){
-        var genid = this.utilityService.generateId(download.botId, download.number);
 
-        var newDownload = {id :genid, animeInfo: { animeid : this.animeInfo.id, title: this.animeInfo.animeInfo.canonicalTitle, cover_original : this.animeInfo.animeInfo.posterImage.original, cover_small: this.animeInfo.animeInfo.posterImage.small}, episodeNumber: download.episodeNumber, pack : download.number, bot: download.botId, filename: download.name, filesize: download.size, status : "Waiting", progress : "0", speed : "0"};
+        var newDownload = {
+          anime_id: this.animeInfo.anime_id,
+          anime_name: this.animeInfo.anime_info.attributes.slug,
+          bot: download.BotName,
+          pack: download.PackNumber,
+          episodeNumber: download.EpisodeNumber,
+          season: download.Season,
+          filesize: download.FileSize
+      };
+
         this.downloadService.addDownload(newDownload);
         
         this.shareService.showMessage("succes", "Added to Downloads!");

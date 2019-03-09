@@ -96,31 +96,9 @@ export class DownloadService {
      * @param {*} download (gets a json object as parameter with download information)
      * @memberof DownloadService
      */
-    addDownload(download: any){
-        
-        this.backendService.sendMessage({action : "get_free_space"});  
-        this.downloadQue.push(download);
-
-        let customDirPerAnime = this.shareService.getDataLocal("CustomDirectoryPerAnime");
-        this.consoleWrite("custom dir check clicked");
-        this.consoleWrite(customDirPerAnime);
-        if(!customDirPerAnime){
-            this.shareService.storeDataLocal("CustomDirectoryPerAnime", "enabled");
-            download.filesize = download.filesize.substr(0, download.filesize.length - 1);
-            this.backendService.sendMessage({"action": "add_download", "extra" : download});
-        } else {
-            if(customDirPerAnime == "enabled"){
-                download.filesize = download.filesize.substr(0, download.filesize.length - 1);
-                this.backendService.sendMessage({"action": "add_download", "extra" : download});
-            } else {
-                download.filesize = download.filesize.substr(0, download.filesize.length - 1);
-                download.dir = "NoSeperateDirectories";                
-                this.backendService.sendMessage({"action": "add_download", "extra" : download});
-            }
-        }
-
-        this.shareService.updateAmountOfDownloads(this.downloadQue.length);
-       
+    addDownload(download: any){        
+        this.backendService.sendMessage({ action: "get_free_space" });
+        this.backendService.sendMessage({ "action": "add_download", "extra": download });   
     }
 
     addDownloadBatch(downloads: any){

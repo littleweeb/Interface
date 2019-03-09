@@ -174,18 +174,15 @@
                 <div class="default text">All Bots</div>
                 <div class="menu botlist min-width-7"  >  
                     <div class="item" (click)="showBot('all')" >All Bots</div>
-                    <div class="item" *ngFor="let bot of this.animeInfo.anime_bot_sources"  (click)="showBot(bot)"  >{{bot}}</div>
+                    <div class="item" *ngFor="let bot of this.animeInfo.anime_bot_sources | keys"  (click)="showBot(bot.key)"  >{{bot.key}} ({{bot.value}})</div>
                 </div>
             </div>
             <div class="ui selection dropdown fixed-width-150" >
                 <input type="hidden" name="resolutionAnime"  class="fixed-width-150">
                 <i class="dropdown icon"></i>
                 <div class="default text">{{dropdownres}}</div>
-                <div class="menu min-width-7" >                
-                    <div class="item " (click)="showResolution('UNKNOWN')">Not Specified</div>
-                    <div class="item" (click)="showResolution('480P')" >480p</div>
-                    <div class="item" (click)="showResolution('720P')" >720p</div>
-                    <div class="item" (click)="showResolution('1080P')" >1080p</div>
+                <div class="menu min-width-7" >                    
+                    <div class="item" *ngFor="let resolution of this.animeInfo.anime_resolutions | keys " (click)="showResolution(resolution.key)"  >{{resolution.key}} ({{resolution.value}})</div>  
                 </div>
             </div> 
             
@@ -208,7 +205,7 @@
 
         <h4> Go to the <a href="/settings"> Settings </a> page to select search strictness, where lower means that it's more likely to find files which might not be related to the anime in question. But in case that the files have different names than the original anime title then you could use that.</h4>
     </div>
-    <div *ngIf="showAlreadyDownloaded" class="ui grid">
+    <div *ngIf="this.animeInfo.anime_downloads.length > 0" class="ui grid">
         <div class="sixteen wide column">
             <div class="ui styled accordion min-width-100" >
                 <div class="title">
@@ -225,9 +222,9 @@
                             </tr>
                         </thead>
                         <tbody id="listWithDownloads">
-                            <tr *ngFor="let file of alreadyDownloadedFiles">
+                            <tr *ngFor="let file of this.animeInfo.anime_downloads">
                                 <td id="filename_{{file.id}}">{{file.filename}}</td>
-                                <td id="filename_{{file.id}}">{{file.filesize}} Mb</td>
+                                <td id="filename_{{file.id}}">{{(file.filesize / 1024)}} Mb</td>
                                 <td id="buttons_{{file.id}}">
                                     <p>
                                         <button *ngIf="isLocal" class="min-width-100 margin-bottom-5" (click)="sendPlayRequest(file)" class="ui primary button"><i class="play icon"></i></button>                            
@@ -298,8 +295,7 @@
                                 <button class="ui green inverted button" *ngIf="!enableAdvanced" (click)="playEpisode(episode.attributes.number)" ><i class="play icon"></i></button>
                                 <label>Episode {{episode.attributes.number}} - {{episode.attributes.canonicalTitle}}</label>
                             </div>               
-                            <div class="content" *ngIf="enableAdvanced" >
-                                
+                            <div class="content" *ngIf="enableAdvanced" >                                
                                 <table class="ui very basic unstackable table bg-white min-width-100">
                                     <thead>
                                         <tr>
@@ -319,7 +315,7 @@
                                                     </td>
                                                     <td>{{file.BotName}}</td>
                                                     <td>{{file.FullFileName}}</td>
-                                                    <td>{{file.FileSize}}</td>                                                       
+                                                    <td>{{(file.FileSize / 1024)}} Mb</td>                                                       
                                                 </ng-container>
                                             </tr>                                                  
                                         </ng-container>                                  
@@ -333,7 +329,7 @@
                                                             </td>
                                                             <td>{{file.BotName}}</td>
                                                             <td>{{file.FullFileName}}</td>
-                                                            <td>{{file.FileSize}}</td>                                                            
+                                                            <td>{{(file.FileSize / 1024)}} Mb</td>                                                            
                                                         </ng-container>
                                                     </tr>                                                      
                                                 </ng-container>                                             
@@ -370,4 +366,3 @@
 </div>
   
    
-    
